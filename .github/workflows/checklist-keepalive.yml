@@ -1,0 +1,23 @@
+name: Keep shared checklist active
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Touch shared checklist storage
+        env:
+          CHECKLIST_URL: https://mantledb.sh/v2/erp-comments-checklist-66ad2811a6a8496e9f2b/checklist
+        run: |
+          curl --fail --silent --show-error \
+            --request PATCH \
+            --header "Content-Type: application/json" \
+            --data "{\"_lastKeepalive\":\"$(date -u +%FT%TZ)\"}" \
+            "$CHECKLIST_URL"

@@ -115,6 +115,33 @@ h2 {
   font-size: 16px;
 }
 
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  color: #16845b;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.sync-status::before {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 4px rgba(35, 175, 116, 0.12);
+  content: "";
+}
+
+.sync-status.is-saving {
+  color: #b7790b;
+}
+
+.sync-status.is-offline {
+  color: #c94848;
+}
+
 .progress-track {
   height: 14px;
   overflow: hidden;
@@ -577,6 +604,7 @@ h2 {
         <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="45" aria-valuenow="0" aria-label="Прогресс выполнения">
           <span id="progress-bar"></span>
         </div>
+        <div id="sync-status" class="sync-status is-saving" role="status" aria-live="polite">Подключаем общие галочки…</div>
       </section>
     </header>
 
@@ -1035,6 +1063,18 @@ const storageKeys = {
   issues: "crm-design-comments:issues:v1",
 };
 
+const sharedChecklist = {
+  endpoint: "https://mantledb.sh/v2/erp-comments-checklist-66ad2811a6a8496e9f2b/checklist",
+  pollInterval: 4000,
+  retryLimit: 30000,
+};
+
+const issueIds = new Set(issues.map((issue) => issue.id));
+const pendingWrites = new Map();
+let syncTimer = 0;
+let writeSequence = 0;
+let localMigrationStarted = false;
+
 const state = {
   selectedId: issues[0].id,
   activeService: issues[0].service,
@@ -1048,6 +1088,7 @@ const elements = {
   progressCount: document.querySelector("#progress-count"),
   progressBar: document.querySelector("#progress-bar"),
   progressTrack: document.querySelector(".progress-track"),
+  syncStatus: document.querySelector("#sync-status"),
   previewNumber: document.querySelector("#preview-number"),
   previewTitle: document.querySelector("#preview-title"),
   previewMeta: document.querySelector("#preview-meta"),
@@ -1075,6 +1116,121 @@ function saveSet(key, values) {
   } catch {
     // Некоторые браузеры запрещают localStorage для локальных файлов.
     // Чекбоксы всё равно должны работать в текущей сессии.
+  }
+}
+
+function setSyncStatus(mode, text) {
+  elements.syncStatus.classList.toggle("is-saving", mode === "saving");
+  elements.syncStatus.classList.toggle("is-offline", mode === "offline");
+  elements.syncStatus.textContent = text;
+}
+
+function renderChecklist() {
+  saveSet(storageKeys.issues, state.completedIssues);
+  renderServiceTabs();
+  renderIssues();
+  renderProgress();
+  renderPreview();
+}
+
+function scheduleSync(delay = sharedChecklist.pollInterval) {
+  window.clearTimeout(syncTimer);
+  syncTimer = window.setTimeout(loadSharedChecklist, delay);
+}
+
+async function loadSharedChecklist() {
+  try {
+    const response = await fetch(`${sharedChecklist.endpoint}?t=${Date.now()}`, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) throw new Error(`Shared checklist: ${response.status}`);
+
+    const remote = await response.json();
+    const remoteCompleted = new Set();
+    const hasRemoteState = remote && typeof remote === "object"
+      && Object.keys(remote).some((id) => issueIds.has(id));
+    if (remote && typeof remote === "object") {
+      Object.entries(remote).forEach(([id, completed]) => {
+        if (completed === true && issueIds.has(id)) remoteCompleted.add(id);
+      });
+    }
+
+    if (!hasRemoteState && !localMigrationStarted && state.completedIssues.size) {
+      localMigrationStarted = true;
+      const migratedValues = {};
+      state.completedIssues.forEach((id) => {
+        if (!issueIds.has(id)) return;
+        remoteCompleted.add(id);
+        const sequence = ++writeSequence;
+        pendingWrites.set(id, { value: true, sequence });
+        migratedValues[id] = true;
+      });
+      saveSharedPatch(migratedValues);
+    }
+
+    pendingWrites.forEach(({ value }, id) => {
+      if (value) remoteCompleted.add(id);
+      else remoteCompleted.delete(id);
+    });
+
+    state.completedIssues = remoteCompleted;
+    renderChecklist();
+    setSyncStatus(
+      pendingWrites.size ? "saving" : "saved",
+      pendingWrites.size ? "Сохраняем для всех…" : "Общие галочки · сохранено для всех",
+    );
+    scheduleSync();
+  } catch {
+    setSyncStatus("offline", "Нет связи · повторяем синхронизацию");
+    scheduleSync(5000);
+  }
+}
+
+async function saveSharedIssue(id, completed, sequence, attempt = 0) {
+  try {
+    const response = await fetch(sharedChecklist.endpoint, {
+      method: "PATCH",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [id]: completed }),
+    });
+    if (!response.ok) throw new Error(`Shared checklist: ${response.status}`);
+
+    if (pendingWrites.get(id)?.sequence === sequence) pendingWrites.delete(id);
+    setSyncStatus(
+      pendingWrites.size ? "saving" : "saved",
+      pendingWrites.size ? "Сохраняем для всех…" : "Общие галочки · сохранено для всех",
+    );
+    scheduleSync(800);
+  } catch {
+    if (pendingWrites.get(id)?.sequence !== sequence) return;
+    setSyncStatus("offline", "Нет связи · галочка сохранена на этом устройстве, повторяем");
+    const retryDelay = Math.min(1500 * 2 ** attempt, sharedChecklist.retryLimit);
+    window.setTimeout(() => saveSharedIssue(id, completed, sequence, attempt + 1), retryDelay);
+  }
+}
+
+async function saveSharedPatch(values) {
+  try {
+    const response = await fetch(sharedChecklist.endpoint, {
+      method: "PATCH",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values),
+    });
+    if (!response.ok) throw new Error(`Shared checklist: ${response.status}`);
+
+    Object.keys(values).forEach((id) => {
+      if (pendingWrites.get(id)?.value === values[id]) pendingWrites.delete(id);
+    });
+    setSyncStatus("saved", "Общие галочки · сохранено для всех");
+    scheduleSync(800);
+  } catch {
+    Object.entries(values).forEach(([id, completed]) => {
+      const pending = pendingWrites.get(id);
+      if (pending) saveSharedIssue(id, completed, pending.sequence);
+    });
   }
 }
 
@@ -1178,11 +1334,11 @@ function toggleIssue(id, completed) {
   } else {
     state.completedIssues.delete(id);
   }
-  saveSet(storageKeys.issues, state.completedIssues);
-  renderServiceTabs();
-  renderIssues();
-  renderProgress();
-  renderPreview();
+  const sequence = ++writeSequence;
+  pendingWrites.set(id, { value: completed, sequence });
+  setSyncStatus("saving", "Сохраняем для всех…");
+  renderChecklist();
+  saveSharedIssue(id, completed, sequence);
 }
 
 function selectIssue(id, scrollOnMobile = false) {
@@ -1234,6 +1390,12 @@ renderServiceTabs();
 renderIssues();
 renderPreview();
 renderProgress();
+loadSharedChecklist();
+
+window.addEventListener("online", () => loadSharedChecklist());
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) loadSharedChecklist();
+});
 
 </script>
 </body>
