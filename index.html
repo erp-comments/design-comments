@@ -90,8 +90,8 @@ h2 {
 }
 
 .progress-card {
-  min-width: 310px;
-  padding: 15px 17px 17px;
+  min-width: 620px;
+  padding: 10px;
   border: 2px solid #bdd1ff;
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.96);
@@ -99,20 +99,52 @@ h2 {
   backdrop-filter: blur(12px);
 }
 
-.progress-copy {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  align-items: center;
-  margin-bottom: 11px;
-  color: var(--text);
-  font-size: 15px;
-  font-weight: 700;
+.collection-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
-.progress-copy strong {
+.collection-tab {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #dce5f6;
+  border-radius: 12px;
+  background: #f7f9fd;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.collection-tab:hover {
+  border-color: #9fbcfa;
+  transform: translateY(-1px);
+}
+
+.collection-tab.is-active {
+  border-color: #4b80f4;
+  background: #edf3ff;
+  box-shadow: 0 0 0 2px rgba(52, 120, 246, 0.1);
+}
+
+.collection-tab-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.collection-tab-title {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.collection-tab strong {
+  white-space: nowrap;
   color: var(--blue);
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .sync-status {
@@ -163,6 +195,7 @@ h2 {
 
 .issue-main:focus-visible,
 .service-tab:focus-visible,
+.collection-tab:focus-visible,
 .close-button:focus-visible,
 .image-button:focus-visible {
   outline: 3px solid rgba(52, 120, 246, 0.35);
@@ -575,6 +608,10 @@ h2 {
     align-items: flex-start;
   }
 
+  .collection-tabs {
+    grid-template-columns: 1fr;
+  }
+
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -596,14 +633,27 @@ h2 {
         <p class="subtitle">Наведи на пункт или нажми на него, чтобы увидеть размеченный скрин.</p>
       </div>
 
-      <section class="progress-card" aria-labelledby="progress-label">
-        <div class="progress-copy">
-          <span id="progress-label">Прогресс выполнения</span>
-          <strong id="progress-count">0 из 45 · 0%</strong>
-        </div>
-        <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="45" aria-valuenow="0" aria-label="Прогресс выполнения">
-          <span id="progress-bar"></span>
-        </div>
+      <section class="progress-card" aria-label="Разделы комментариев и прогресс">
+        <nav id="collection-tabs" class="collection-tabs" aria-label="Разделы комментариев">
+          <button type="button" class="collection-tab is-active" data-collection="design" aria-pressed="true">
+            <span class="collection-tab-row">
+              <span class="collection-tab-title">Комментарии по дизайну</span>
+              <strong id="design-progress-count">0 из 45</strong>
+            </span>
+            <span id="design-progress-track" class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="45" aria-valuenow="0" aria-label="Прогресс комментариев по дизайну">
+              <span id="design-progress-bar"></span>
+            </span>
+          </button>
+          <button type="button" class="collection-tab" data-collection="employees" aria-pressed="false">
+            <span class="collection-tab-row">
+              <span class="collection-tab-title">Комментарии сотрудников</span>
+              <strong id="employee-progress-count">0 из 12</strong>
+            </span>
+            <span id="employee-progress-track" class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0" aria-label="Прогресс комментариев сотрудников">
+              <span id="employee-progress-bar"></span>
+            </span>
+          </button>
+        </nav>
         <div id="sync-status" class="sync-status is-saving" role="status" aria-live="polite">Подключаем общие галочки…</div>
       </section>
     </header>
@@ -1059,6 +1109,127 @@ const issues = [
   },
 ];
 
+const employeeIssues = [
+  {
+    id: "employee-call-playback-speed",
+    number: "01",
+    service: "Сделка",
+    page: "Главная",
+    title: "Вернуть управление скоростью воспроизведения звонка",
+    image: "assets/employee-comments/01-playback.png",
+    alt: "Панель воспроизведения звонка без управления скоростью",
+  },
+  {
+    id: "employee-note-file-upload",
+    number: "02",
+    service: "Сделка",
+    page: "Главная",
+    title: "Исправить загрузку файлов через примечания из сделки",
+    note: "Пример: crm.klimek.ru/home/22235093 — файл загружается с подтверждением, но затем не отображается.",
+    image: "assets/employee-comments/02-files.png",
+    alt: "Форма загрузки файлов через примечание в сделке",
+  },
+  {
+    id: "employee-task-canvas-edit",
+    number: "03",
+    service: "Сделка",
+    page: "Главная",
+    title: "Дать возможность открывать и редактировать задачу из общего полотна",
+    note: "Пример: crm.klimek.ru/home/22178251.",
+    image: "assets/employee-comments/03-task.png",
+    alt: "Задача на общем полотне сделки",
+  },
+  {
+    id: "employee-deal-canvas-scroll",
+    number: "04",
+    service: "Сделка",
+    page: "Главная",
+    title: "Вернуть кнопку прокрутки полотна сделки вверх и вниз",
+    image: "assets/employee-comments/04-scroll.png",
+    alt: "Полотно сделки, где нужна кнопка прокрутки вверх и вниз",
+  },
+  {
+    id: "employee-primary-contact-switch",
+    number: "05",
+    service: "Сделка",
+    page: "Контакты",
+    title: "Вернуть переключатель «Основной контакт» после сохранения",
+    note: "Сейчас переключатель доступен только при добавлении контакта и исчезает после сохранения.",
+    image: "assets/employee-comments/05-primary-contact-a.png",
+    alt: "Форма контакта с переключателем Основной контакт",
+  },
+  {
+    id: "employee-pk-extra-file-dots",
+    number: "06",
+    service: "ПК",
+    page: "Главная",
+    title: "Убрать лишние точки у дополнительного файла в ПК",
+    image: "assets/employee-comments/06-no-screenshot.svg",
+    alt: "Для комментария нет отдельного скриншота",
+  },
+  {
+    id: "employee-rejection-window-position",
+    number: "07",
+    service: "CRM",
+    page: "Непринятые",
+    title: "Исправить окно причины отклонения — оно не должно висеть между строк",
+    image: "assets/employee-comments/07-reject.png",
+    alt: "Окно причины отклонения расположено между строками",
+  },
+  {
+    id: "employee-pk-status-colors",
+    number: "08",
+    service: "ПК",
+    page: "Главная",
+    title: "Развести цвета статусов: «Оплачен» оставить как есть",
+    image: "assets/employee-comments/08-status-colors.png",
+    alt: "Статусы оплаты в таблице ПК",
+  },
+  {
+    id: "employee-pk-ruble-v-colors",
+    number: "09",
+    service: "ПК",
+    page: "Главная",
+    title: "Сделать символ «Р» синим, а «V» — более ярким",
+    image: "assets/employee-comments/08-status-colors.png",
+    alt: "Цветовые обозначения Р и V в таблице ПК",
+  },
+  {
+    id: "employee-expense-spaced-sum",
+    number: "10",
+    service: "Финансы",
+    page: "Добавить расход",
+    title: "При добавлении расхода принимать сумму с пробелами",
+    note: "Поле «Сумма» должно корректно считывать число, даже если между разрядами есть пробел.",
+    image: "assets/employee-comments/10-spaces.png",
+    alt: "Поле суммы при добавлении расхода",
+  },
+  {
+    id: "employee-excel-number-copy",
+    number: "11",
+    service: "ПК",
+    page: "Главная",
+    title: "Сделать суммы удобными для копирования в Excel",
+    note: "Визуально оставить разделители разрядов, но при копировании сумма должна вставляться в Excel как число без пробелов.",
+    image: "assets/employee-comments/11-excel.png",
+    alt: "Суммы в таблице для копирования в Excel",
+  },
+  {
+    id: "employee-pk-duplicate-name",
+    number: "12",
+    service: "ПК",
+    page: "Главная",
+    title: "Убрать повтор имени при нажатии",
+    image: "assets/employee-comments/12-name.png",
+    alt: "Повтор имени в интерфейсе ПК",
+  },
+];
+
+const issueCollections = {
+  design: issues,
+  employees: employeeIssues,
+};
+
 const storageKeys = {
   issues: "crm-design-comments:issues:v1",
 };
@@ -1069,25 +1240,30 @@ const sharedChecklist = {
   retryLimit: 30000,
 };
 
-const issueIds = new Set(issues.map((issue) => issue.id));
+const issueIds = new Set(Object.values(issueCollections).flat().map((issue) => issue.id));
 const pendingWrites = new Map();
 let syncTimer = 0;
 let writeSequence = 0;
 let localMigrationStarted = false;
 
 const state = {
+  activeCollection: "design",
   selectedId: issues[0].id,
   activeService: issues[0].service,
   completedIssues: readStoredSet(storageKeys.issues),
 };
 
 const elements = {
+  collectionTabs: document.querySelector("#collection-tabs"),
   serviceTabs: document.querySelector("#service-tabs"),
   list: document.querySelector("#issues-list"),
   empty: document.querySelector("#empty-state"),
-  progressCount: document.querySelector("#progress-count"),
-  progressBar: document.querySelector("#progress-bar"),
-  progressTrack: document.querySelector(".progress-track"),
+  designProgressCount: document.querySelector("#design-progress-count"),
+  designProgressBar: document.querySelector("#design-progress-bar"),
+  designProgressTrack: document.querySelector("#design-progress-track"),
+  employeeProgressCount: document.querySelector("#employee-progress-count"),
+  employeeProgressBar: document.querySelector("#employee-progress-bar"),
+  employeeProgressTrack: document.querySelector("#employee-progress-track"),
   syncStatus: document.querySelector("#sync-status"),
   previewNumber: document.querySelector("#preview-number"),
   previewTitle: document.querySelector("#preview-title"),
@@ -1127,6 +1303,7 @@ function setSyncStatus(mode, text) {
 
 function renderChecklist() {
   saveSet(storageKeys.issues, state.completedIssues);
+  renderCollectionTabs();
   renderServiceTabs();
   renderIssues();
   renderProgress();
@@ -1238,8 +1415,12 @@ function isIssueVisible(issue) {
   return issue.service === state.activeService;
 }
 
+function getActiveIssues() {
+  return issueCollections[state.activeCollection];
+}
+
 function getServiceGroups() {
-  return [...new Set(issues.map((issue) => issue.service))];
+  return [...new Set(getActiveIssues().map((issue) => issue.service))];
 }
 
 function getServiceLabel(service) {
@@ -1248,9 +1429,10 @@ function getServiceLabel(service) {
 
 function renderServiceTabs() {
   elements.serviceTabs.replaceChildren();
+  const activeIssues = getActiveIssues();
 
   getServiceGroups().forEach((service) => {
-    const serviceIssues = issues.filter((issue) => issue.service === service);
+    const serviceIssues = activeIssues.filter((issue) => issue.service === service);
     const completed = serviceIssues.filter((issue) => state.completedIssues.has(issue.id)).length;
     const button = document.createElement("button");
     button.type = "button";
@@ -1268,9 +1450,10 @@ function renderServiceTabs() {
 
 function selectService(service) {
   state.activeService = service;
-  const visibleIssues = issues.filter(isIssueVisible);
+  const activeIssues = getActiveIssues();
+  const visibleIssues = activeIssues.filter(isIssueVisible);
   if (!visibleIssues.some((issue) => issue.id === state.selectedId)) {
-    state.selectedId = visibleIssues[0]?.id || issues[0].id;
+    state.selectedId = visibleIssues[0]?.id || activeIssues[0].id;
   }
   renderServiceTabs();
   renderIssues();
@@ -1278,7 +1461,7 @@ function selectService(service) {
 }
 
 function renderIssues() {
-  const visibleIssues = issues.filter(isIssueVisible);
+  const visibleIssues = getActiveIssues().filter(isIssueVisible);
   elements.list.replaceChildren();
 
   visibleIssues.forEach((issue) => {
@@ -1353,7 +1536,8 @@ function selectIssue(id, scrollOnMobile = false) {
 }
 
 function renderPreview() {
-  const issue = issues.find((item) => item.id === state.selectedId) || issues[0];
+  const activeIssues = getActiveIssues();
+  const issue = activeIssues.find((item) => item.id === state.selectedId) || activeIssues[0];
   elements.previewNumber.textContent = issue.number;
   elements.previewTitle.textContent = issue.title;
   elements.previewMeta.textContent = `${issue.service} · ${issue.page}`;
@@ -1364,21 +1548,63 @@ function renderPreview() {
 }
 
 function renderProgress() {
-  const completed = issues.filter((issue) => state.completedIssues.has(issue.id)).length;
-  const total = issues.length;
+  updateProgress(
+    issues,
+    elements.designProgressCount,
+    elements.designProgressBar,
+    elements.designProgressTrack,
+  );
+  updateProgress(
+    employeeIssues,
+    elements.employeeProgressCount,
+    elements.employeeProgressBar,
+    elements.employeeProgressTrack,
+  );
+}
+
+function updateProgress(collection, countElement, barElement, trackElement) {
+  const completed = collection.filter((issue) => state.completedIssues.has(issue.id)).length;
+  const total = collection.length;
   const percent = total === 0 ? 0 : (completed / total) * 100;
-  elements.progressCount.textContent = `${completed} из ${total} · ${Math.round(percent)}%`;
-  elements.progressBar.style.width = `${percent}%`;
-  elements.progressTrack.setAttribute("aria-valuemax", String(total));
-  elements.progressTrack.setAttribute("aria-valuenow", String(completed));
+  countElement.textContent = `${completed} из ${total}`;
+  barElement.style.width = `${percent}%`;
+  trackElement.setAttribute("aria-valuemax", String(total));
+  trackElement.setAttribute("aria-valuenow", String(completed));
+}
+
+function renderCollectionTabs() {
+  elements.collectionTabs.querySelectorAll(".collection-tab").forEach((button) => {
+    const active = button.dataset.collection === state.activeCollection;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function selectCollection(collection) {
+  if (!issueCollections[collection] || collection === state.activeCollection) return;
+  state.activeCollection = collection;
+  const activeIssues = getActiveIssues();
+  state.activeService = activeIssues[0].service;
+  state.selectedId = activeIssues[0].id;
+  renderCollectionTabs();
+  renderServiceTabs();
+  renderIssues();
+  renderPreview();
+  renderProgress();
 }
 
 elements.previewImageButton.addEventListener("click", () => {
-  const issue = issues.find((item) => item.id === state.selectedId) || issues[0];
+  const activeIssues = getActiveIssues();
+  const issue = activeIssues.find((item) => item.id === state.selectedId) || activeIssues[0];
   elements.dialogTitle.textContent = `${issue.number} · ${issue.title}`;
   elements.dialogImage.src = issue.image;
   elements.dialogImage.alt = issue.alt;
   elements.dialog.showModal();
+});
+
+elements.collectionTabs.addEventListener("click", (event) => {
+  const button = event.target.closest(".collection-tab");
+  if (button) selectCollection(button.dataset.collection);
 });
 
 elements.dialogClose.addEventListener("click", () => elements.dialog.close());
@@ -1386,10 +1612,7 @@ elements.dialog.addEventListener("click", (event) => {
   if (event.target === elements.dialog) elements.dialog.close();
 });
 
-renderServiceTabs();
-renderIssues();
-renderPreview();
-renderProgress();
+renderChecklist();
 loadSharedChecklist();
 
 window.addEventListener("online", () => loadSharedChecklist());

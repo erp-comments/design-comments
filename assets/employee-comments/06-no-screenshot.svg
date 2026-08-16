@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760">
+  <rect width="1400" height="760" fill="#f4f7fc"/>
+  <rect x="110" y="90" width="1180" height="580" rx="28" fill="#ffffff" stroke="#dbe4f2" stroke-width="3"/>
+  <circle cx="700" cy="300" r="70" fill="#e8f0ff"/>
+  <path d="M668 300h64M700 268v64" stroke="#3478f6" stroke-width="12" stroke-linecap="round"/>
+  <text x="700" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" font-weight="700" fill="#15213a">Убрать лишние точки у дополнительного файла</text>
+  <text x="700" y="485" text-anchor="middle" font-family="Arial, sans-serif" font-size="25" fill="#6c7890">Скриншот к этому пункту в документе не приложен</text>
+</svg>
