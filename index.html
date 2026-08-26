@@ -91,6 +91,7 @@ h2 {
 }
 
 .progress-card {
+  width: min(840px, 62vw);
   min-width: 620px;
   padding: 10px;
   border: 2px solid #bdd1ff;
@@ -102,7 +103,7 @@ h2 {
 
 .collection-tabs {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -516,6 +517,35 @@ h2 {
   object-fit: contain;
 }
 
+.image-button.is-placeholder {
+  min-height: 260px;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  background: linear-gradient(145deg, #f7f9fd, #edf3ff);
+}
+
+.image-button.is-placeholder::before {
+  content: "Тестовый комментарий";
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.image-button.is-placeholder::after {
+  content: "Скриншот не приложен";
+  position: absolute;
+  top: calc(50% + 24px);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.image-button.is-placeholder img,
+.image-button.is-placeholder .zoom-hint {
+  display: none;
+}
+
 .zoom-hint {
   position: absolute;
   right: 12px;
@@ -684,6 +714,7 @@ h2 {
   }
 
   .progress-card {
+    width: 100%;
     min-width: 0;
   }
 
@@ -776,6 +807,15 @@ h2 {
             </span>
             <span id="employee-progress-track" class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0" aria-label="Прогресс комментариев сотрудников">
               <span id="employee-progress-bar"></span>
+            </span>
+          </button>
+          <button type="button" class="collection-tab" data-collection="august26" aria-pressed="false">
+            <span class="collection-tab-row">
+              <span class="collection-tab-title">Комменты от 26.08</span>
+              <strong id="august26-progress-count">0 из 12</strong>
+            </span>
+            <span id="august26-progress-track" class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0" aria-label="Прогресс комментариев от 26.08">
+              <span id="august26-progress-bar"></span>
             </span>
           </button>
         </nav>
@@ -1383,9 +1423,109 @@ const employeeIssues = [
   },
 ];
 
+const august26Issues = [
+  {
+    id: "august26-test-01",
+    number: "01",
+    service: "Тест 26.08",
+    page: "Проверка",
+    title: "Тестовый комментарий 1",
+    note: "Тестовый пункт для проверки вкладки «Комменты от 26.08».",
+  },
+  {
+    id: "august26-test-02",
+    number: "02",
+    service: "Тест 26.08",
+    page: "Проверка",
+    title: "Тестовый комментарий 2",
+    note: "Тестовый пункт для проверки вкладки «Комменты от 26.08».",
+  },
+  {
+    id: "august26-test-03",
+    number: "03",
+    service: "Тест 26.08",
+    page: "Проверка",
+    title: "Тестовый комментарий 3",
+    note: "Тестовый пункт для проверки вкладки «Комменты от 26.08».",
+  },
+  {
+    id: "august26-test-04",
+    number: "04",
+    service: "Тест 26.08",
+    page: "Проверка",
+    title: "Тестовый комментарий 4",
+    note: "Тестовый пункт для проверки вкладки «Комменты от 26.08».",
+  },
+  {
+    id: "august26-test-05",
+    number: "05",
+    service: "Тест 26.08",
+    page: "Проверка",
+    title: "Тестовый комментарий 5",
+    note: "Тестовый пункт для проверки вкладки «Комменты от 26.08».",
+  },
+  {
+    id: "august26-test-06",
+    number: "06",
+    service: "Тест 26.08",
+    page: "Проверка",
+    title: "Тестовый комментарий 6",
+    note: "Тестовый пункт для проверки вкладки «Комменты от 26.08».",
+  },
+  {
+    id: "august26-test-07",
+    number: "07",
+    service: "Тест 26.08",
+    page: "Проверка",
+    title: "Тестовый комментарий 7",
+    note: "Тестовый пункт для проверки вкладки «Комменты от 26.08».",
+  },
+  {
+    id: "august26-test-08",
+    number: "08",
+    service: "Тест 26.08",
+    page: "Проверка",
+    title: "Тестовый комментарий 8",
+    note: "Тестовый пункт для проверки вкладки «Комменты от 26.08».",
+  },
+  {
+    id: "august26-test-09",
+    number: "09",
+    service: "Тест 26.08",
+    page: "Проверка",
+    title: "Тестовый комментарий 9",
+    note: "Тестовый пункт для проверки вкладки «Комменты от 26.08».",
+  },
+  {
+    id: "august26-test-10",
+    number: "10",
+    service: "Тест 26.08",
+    page: "Проверка",
+    title: "Тестовый комментарий 10",
+    note: "Тестовый пункт для проверки вкладки «Комменты от 26.08».",
+  },
+  {
+    id: "august26-test-11",
+    number: "11",
+    service: "Тест 26.08",
+    page: "Проверка",
+    title: "Тестовый комментарий 11",
+    note: "Тестовый пункт для проверки вкладки «Комменты от 26.08».",
+  },
+  {
+    id: "august26-test-12",
+    number: "12",
+    service: "Тест 26.08",
+    page: "Проверка",
+    title: "Тестовый комментарий 12",
+    note: "Тестовый пункт для проверки вкладки «Комменты от 26.08».",
+  },
+];
+
 const issueCollections = {
   design: issues,
   employees: employeeIssues,
+  august26: august26Issues,
 };
 
 const storageKeys = {
@@ -1429,6 +1569,9 @@ const elements = {
   employeeProgressCount: document.querySelector("#employee-progress-count"),
   employeeProgressBar: document.querySelector("#employee-progress-bar"),
   employeeProgressTrack: document.querySelector("#employee-progress-track"),
+  august26ProgressCount: document.querySelector("#august26-progress-count"),
+  august26ProgressBar: document.querySelector("#august26-progress-bar"),
+  august26ProgressTrack: document.querySelector("#august26-progress-track"),
   syncStatus: document.querySelector("#sync-status"),
   previewNumber: document.querySelector("#preview-number"),
   previewTitle: document.querySelector("#preview-title"),
@@ -1789,6 +1932,8 @@ function renderPreview() {
   if (!issue) {
     elements.previewImage.removeAttribute("src");
     elements.previewImage.alt = "";
+    elements.previewImageButton.classList.remove("is-placeholder");
+    elements.previewImageButton.disabled = false;
     elements.programmerCommentInput.value = "";
     return;
   }
@@ -1797,8 +1942,20 @@ function renderPreview() {
   elements.previewMeta.textContent = `${issue.service} · ${issue.page}`;
   elements.previewNote.textContent = issue.note || "";
   elements.previewNote.hidden = !issue.note;
-  elements.previewImage.src = issue.image;
-  elements.previewImage.alt = issue.alt;
+  const hasImage = Boolean(issue.image);
+  elements.previewImageButton.classList.toggle("is-placeholder", !hasImage);
+  elements.previewImageButton.disabled = !hasImage;
+  elements.previewImageButton.setAttribute(
+    "aria-label",
+    hasImage ? "Открыть скриншот крупно" : "Скриншот не приложен",
+  );
+  if (hasImage) {
+    elements.previewImage.src = issue.image;
+    elements.previewImage.alt = issue.alt || issue.title;
+  } else {
+    elements.previewImage.removeAttribute("src");
+    elements.previewImage.alt = "";
+  }
   renderProgrammerComment(issue);
 }
 
@@ -1834,6 +1991,12 @@ function renderProgress() {
     elements.employeeProgressCount,
     elements.employeeProgressBar,
     elements.employeeProgressTrack,
+  );
+  updateProgress(
+    august26Issues,
+    elements.august26ProgressCount,
+    elements.august26ProgressBar,
+    elements.august26ProgressTrack,
   );
 }
 
@@ -1873,7 +2036,7 @@ elements.previewImageButton.addEventListener("click", () => {
   const issue = activeIssues.find(
     (item) => item.id === state.selectedId && isIssueVisible(item),
   );
-  if (!issue) return;
+  if (!issue || !issue.image) return;
   elements.dialogTitle.textContent = `${issue.number} · ${issue.title}`;
   elements.dialogImage.src = issue.image;
   elements.dialogImage.alt = issue.alt;
