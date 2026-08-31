@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — ERP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #05070f;
+    --panel: #12162a;
+    --panel-2: #171b34;
+    --line: #262c4d;
+    --text: #eef0fb;
+    --text-dim: #7d84ad;
+    --accent: #22d3ee;
+    --accent-2: #a855f7;
+    --accent-3: #ec4899;
+    --accent-dim: #2f5a75;
+    --ok: #34e0a1;
+    --warn: #ff5d7a;
+    --font-size: 14px;
+    --gap: 14px;
+    --radius: 12px;
+    --maxw: 2000px;
+    --panel-alpha: 0.62;
+    --mono: 'JetBrains Mono', 'Courier New', monospace;
+    --sans: 'Rajdhani', -apple-system, 'Segoe UI', sans-serif;
+    --display: 'Orbitron', 'Rajdhani', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1100px 620px at 12% -10%, rgba(168,85,247,.10) 0%, transparent 60%),
+      radial-gradient(1100px 620px at 90% 4%, rgba(34,211,238,.08) 0%, transparent 58%),
+      radial-gradient(700px 500px at 50% 110%, rgba(236,72,153,.06) 0%, transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    font-size:var(--font-size);
+    font-weight:500;
+    line-height:1.5;
+    min-height:100vh;
+    padding:28px 24px 80px;
+    position:relative;
+    overflow-x:hidden;
+  }
+
+  /* ===== Starfield & planets ===== */
+  .starfield{position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events:none;}
+  .star{position:absolute; background:#fff; border-radius:50%; animation:twinkle ease-in-out infinite;}
+  @keyframes twinkle{0%,100%{opacity:.12;} 50%{opacity:.95;}}
+  .shooting-star{
+    position:absolute; width:100px; height:2px;
+    background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.95));
+    border-radius:2px; opacity:0; animation:shoot linear infinite;
+  }
+  @keyframes shoot{
+    0%{opacity:0; transform:translate(0,0) rotate(-18deg);}
+    3%{opacity:1;}
+    22%{opacity:0; transform:translate(460px,150px) rotate(-18deg);}
+    100%{opacity:0;}
+  }
+
+
+  /* ===== Archive banner ===== */
+  .archive-banner{
+    max-width:var(--maxw); margin:0 auto 18px; display:none;
+    align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    padding:10px 18px; border-radius:20px; border:1px solid var(--accent-2);
+    background:color-mix(in srgb, var(--accent-2) 16%, transparent);
+    font-family:var(--mono); font-size:12px; color:var(--text);
+  }
+  .archive-banner.show{display:flex;}
+  .archive-banner b{color:var(--accent-2);}
+
+  .topbar{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:var(--gap); max-width:var(--maxw); margin:0 auto 20px; flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:14px;}
+  .brand-mark{
+    width:44px; height:44px; border-radius:13px; border:1px solid var(--line);
+    background:linear-gradient(145deg, rgba(34,211,238,.10), rgba(168,85,247,.10));
+    display:flex; align-items:center; justify-content:center; color:var(--accent);
+    box-shadow: 0 0 14px rgba(34,211,238,.18);
+  }
+  .brand h1{
+    font-family:var(--display); font-size:29px; margin:0; letter-spacing:.05em; font-weight:800;
+    background:linear-gradient(90deg, var(--accent), var(--accent-2) 55%, var(--accent-3));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+
+  .status-row{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+  .status-pill{
+    font-family:var(--mono); font-size:11px; color:var(--text-dim);
+    display:flex; align-items:center; gap:7px;
+    padding:6px 10px; border:1px solid var(--line); border-radius:20px;
+    background:color-mix(in srgb, var(--panel) 75%, transparent);
+    backdrop-filter:blur(8px);
+  }
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--text-dim); flex:none;}
+  .dot.live{background:var(--ok); box-shadow:0 0 0 3px rgba(52,224,161,.16); animation:pulse 2.4s infinite;}
+  .dot.err{background:var(--warn);}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(52,224,161,.16);} 50%{box-shadow:0 0 0 6px rgba(52,224,161,.04);}}
+  .icon-btn{
+    width:34px; height:34px; border-radius:10px; border:1px solid var(--line);
+    background:color-mix(in srgb, var(--panel) 75%, transparent);
+    color:var(--text-dim); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:all .15s ease; flex:none;
+  }
+  .icon-btn:hover{color:var(--accent); border-color:var(--accent-dim);}
+  .icon-btn.pencil{color:var(--accent-3); border-color:rgba(236,72,153,.3);}
+  .icon-btn.pencil.active{background:rgba(236,72,153,.14);}
+
+  .btn{
+    font-family:var(--sans); font-size:12px; font-weight:600; padding:7px 13px;
+    border-radius:20px; border:1px solid var(--line); background:transparent;
+    color:var(--text-dim); cursor:pointer; transition:all .15s ease;
+  }
+  .btn:hover{border-color:var(--accent-dim); color:var(--accent);}
+  .btn.primary{background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#0a0d1c; border-color:transparent; font-weight:700;}
+  .btn.save-week{
+    background:linear-gradient(90deg, var(--ok), var(--accent)); color:#08150f; border-color:transparent;
+    font-weight:800; padding:9px 18px; font-size:12.5px;
+  }
+
+  .layout{max-width:var(--maxw); margin:0 auto; display:grid; grid-template-columns:220px 1fr 220px; gap:24px; align-items:stretch;}
+  .layout .main-col{align-self:start;}
+  @media (max-width:1150px){ .layout{grid-template-columns:1fr 1fr;} .layout .main-col{grid-column:1 / -1;} }
+  @media (max-width:700px){ .layout{grid-template-columns:1fr;} }
+
+  .dial-card{
+    background:color-mix(in srgb, var(--panel) calc(var(--panel-alpha) * 100%), transparent);
+    backdrop-filter:blur(14px);
+    border:1px solid var(--line);
+    border-radius:var(--radius); padding:22px 16px 18px; text-align:center;
+    display:flex; flex-direction:column;
+  }
+  .dial-wrap{position:relative; width:170px; height:170px; margin:0 auto 12px;}
+  .dial-label{
+    font-family:var(--display); font-size:11px; letter-spacing:.18em; color:var(--text-dim);
+    text-transform:uppercase; margin-bottom:14px;
+  }
+  .dial-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+  .dial-num{font-family:var(--display); font-size:32px; font-weight:800; color:var(--text);}
+  .dial-num.big{font-size:48px; text-shadow:0 0 22px rgba(168,85,247,.4);}
+  .dial-sub{font-family:var(--mono); font-size:11px; color:var(--text-dim); margin-top:2px;}
+
+  .planfact{margin-top:14px; text-align:left;}
+  .planfact-row{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-bottom:4px;}
+  .planfact-track{position:relative; height:8px; border-radius:5px; background:var(--line); overflow:hidden; margin-bottom:10px;}
+  .planfact-fill{position:absolute; inset:0; width:0%; border-radius:5px; background:linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3)); transition:width .5s ease;}
+  .planfact-pct{font-family:var(--display); font-size:13px; font-weight:700; color:var(--accent-2); text-align:right;}
+
+  .stat-chips{display:flex; gap:8px; margin-bottom:14px;}
+  .stat-chip{flex:1; border:1px solid var(--line); border-radius:8px; padding:8px 6px; text-align:center; background:color-mix(in srgb, var(--panel-2) 70%, transparent);}
+  .stat-chip-num{display:block; font-family:var(--display); font-size:18px; font-weight:800;}
+  .stat-chip-label{display:block; font-family:var(--mono); font-size:9px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.1em; margin-top:2px;}
+  .stat-chip.repeats .stat-chip-num{color:var(--ok);}
+  .stat-chip.ads .stat-chip-num{color:var(--accent-3);}
+
+  .planfact-list{margin-top:16px; border-top:1px solid var(--line); padding-top:12px; text-align:left; flex:1;}
+  .pf-item{margin-bottom:9px;}
+  .pf-item-row{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; margin-bottom:3px;}
+  .pf-item-name{color:var(--text); font-weight:600;}
+  .pf-item-nums{color:var(--text-dim);}
+  .pf-item-track{position:relative; height:5px; border-radius:4px; background:var(--line); overflow:hidden;}
+  .pf-item-fill{position:absolute; inset:0; width:0%; border-radius:4px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .4s ease;}
+  .pf-item-fill.over{background:linear-gradient(90deg, var(--ok), var(--accent));}
+
+  .mgr-list{text-align:left; border-top:1px solid var(--line); padding-top:12px; margin-top:4px; flex:1;}
+  .mgr-row{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 0; border-bottom:1px solid var(--line);}
+  .mgr-row:last-child{border-bottom:none;}
+  .mgr-row-name{font-family:var(--sans); font-weight:700; font-size:14px; color:var(--text); text-align:left;}
+  .mgr-row-name.ad{color:var(--accent-3);}
+  .mgr-row .del{color:var(--warn); cursor:pointer; font-size:11px; margin-left:6px; display:none;}
+  body.edit-active .mgr-row .del{display:inline;}
+
+  .main-col{display:flex; flex-wrap:wrap; gap:20px; align-content:flex-start;}
+  .panel-slot{display:flex; flex-direction:column;}
+  .panel-slot.w-full{flex:1 1 100%;}
+  .panel-slot.w-half{flex:1 1 calc(50% - 10px); min-width:340px;}
+
+  .panel{
+    background:color-mix(in srgb, var(--panel) calc(var(--panel-alpha) * 100%), transparent);
+    backdrop-filter:blur(14px);
+    border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; flex:1; display:flex; flex-direction:column;
+  }
+  .panel-head{
+    display:flex; align-items:center; justify-content:space-between; padding:14px 18px;
+    border-bottom:1px solid var(--line);
+    background:color-mix(in srgb, var(--panel-2) 65%, transparent);
+    gap:10px; flex-wrap:wrap;
+  }
+  .panel-head-left{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .panel-head h2{
+    font-family:var(--display); font-size:12px; margin:0; text-transform:uppercase;
+    letter-spacing:.13em; color:var(--text-dim); font-weight:700;
+  }
+
+  .quota-input{
+    width:56px; background:var(--bg); border:1.5px solid var(--accent-dim); color:var(--text);
+    font-family:var(--mono); text-align:center; border-radius:6px; padding:5px 4px;
+    font-size:15px; font-weight:700;
+  }
+  .quota-input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 2px rgba(34,211,238,.2); }
+  .quota-input:disabled{ color:var(--text); cursor:default; opacity:1; }
+  .mgr-row-quota{ font-family:var(--mono); font-weight:700; font-size:15px; color:var(--text); }
+
+  .add-row{padding:12px 0 0; display:none; gap:8px; border-top:1px solid var(--line); flex-wrap:wrap; margin-top:12px;}
+  .add-row.visible{display:flex;}
+  .add-row input{background:var(--bg); border:1px solid var(--line); color:var(--text); padding:7px 10px; border-radius:6px; font-family:var(--sans); font-size:12.5px;}
+  .add-row input[name="add-name"]{flex:1; min-width:90px;}
+  .add-row input[name="add-quota"]{width:70px;}
+
+  .chart-wrap{min-height:350px; padding:16px 18px 8px; overflow:hidden; display:flex; align-items:center;}
+  .chart-wrap > svg{display:block; width:100%; height:auto; min-width:0;}
+  .chart-empty{padding:34px; text-align:center; color:var(--text-dim); font-family:var(--mono); font-size:12px;}
+
+  .segmented{display:flex; gap:2px; padding:2px; border:1px solid var(--line); border-radius:20px; background:var(--bg);}
+  .segmented button{
+    border:none; background:transparent; color:var(--text-dim); font-family:var(--mono); font-size:10.5px;
+    padding:5px 11px; border-radius:16px; cursor:pointer; transition:all .15s ease;
+  }
+  .segmented button.active{background:#d3e1fc; color:#2457b9; font-weight:800; box-shadow:inset 0 0 0 1px #bfd3fa;}
+  .segmented button:not(.active):hover{color:var(--accent);}
+
+  .leads-body{max-height:0; overflow:hidden; transition:max-height .35s ease;}
+  .leads-body.open{max-height:3000px; overflow:auto;}
+  table{width:100%; border-collapse:collapse; font-family:var(--mono);}
+  th, td{padding: calc(var(--gap) * 0.55) calc(var(--gap) * 0.6); text-align:left; border-bottom:1px solid var(--line); font-size:calc(var(--font-size) - 1px); white-space:normal;}
+  th{color:var(--text-dim); font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; background:color-mix(in srgb, var(--panel-2) 60%, transparent); font-family:var(--display);}
+  tr:last-child td{border-bottom:none;}
+  .leads-table td a{color:var(--accent); text-decoration:none;}
+  .leads-table td a:hover{text-decoration:underline;}
+  .badge{display:inline-block; padding:2px 8px; border-radius:10px; font-size:10px; font-family:var(--mono); text-transform:uppercase;}
+  .badge.повтор{background:rgba(52,224,161,.14); color:var(--ok);}
+  .badge.реклама{background:rgba(236,72,153,.14); color:var(--accent-3);}
+  .leads-table th[data-sort]{cursor:pointer; user-select:none;}
+  .leads-table th[data-sort]:hover{color:var(--accent);}
+  .leads-table th.sorted-asc, .leads-table th.sorted-desc{color:var(--accent-2);}
+
+  .thesis-grid{display:grid; grid-template-columns:1fr 1fr; gap:0;}
+  @media (max-width:700px){ .thesis-grid{grid-template-columns:1fr;} }
+  .thesis-col{padding:20px 22px;}
+  .thesis-col + .thesis-col{border-left:1px solid var(--line);}
+  @media (max-width:700px){ .thesis-col + .thesis-col{border-left:none; border-top:1px solid var(--line);} }
+  .thesis-title{font-family:var(--display); font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:8px;}
+  .thesis-title.done{color:var(--ok);}
+  .thesis-title.plans{color:var(--accent-2);}
+  .thesis-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px;}
+  .thesis-list li{font-family:var(--sans); font-weight:700; font-size:18px; line-height:1.3; padding-left:20px; position:relative; color:var(--text);}
+  .thesis-list li::before{content:'▸'; position:absolute; left:0; color:var(--accent);}
+  .thesis-list.plans li::before{color:var(--accent-2);}
+  .thesis-edit{display:none;}
+  body.edit-active .thesis-view{display:none;}
+  body.edit-active .thesis-edit{display:block;}
+  .thesis-edit textarea{width:100%; min-height:110px; background:var(--bg); border:1px solid var(--line); color:var(--text); font-family:var(--sans); font-size:15px; font-weight:600; padding:10px 12px; border-radius:6px; resize:vertical; line-height:1.5;}
+  .thesis-edit textarea:focus{outline:none; border-color:var(--accent-3);}
+  .thesis-hint{font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-top:6px;}
+
+  .drawer-overlay{position:fixed; inset:0; background:rgba(0,0,0,.5); opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:40;}
+  .drawer-overlay.open{opacity:1; pointer-events:auto;}
+  .drawer{position:fixed; top:0; right:0; height:100%; width:340px; background:var(--panel); border-left:1px solid var(--line); transform:translateX(100%); transition:transform .25s ease; z-index:41; padding:22px 20px; overflow-y:auto;}
+  .drawer.open{transform:translateX(0);}
+  .drawer h3{font-size:12px; text-transform:uppercase; letter-spacing:.1em; color:var(--text-dim); margin:22px 0 10px;}
+  .drawer h3:first-of-type{margin-top:0;}
+  .field-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:10px;}
+  .field-row label{font-size:12.5px; color:var(--text);}
+  .field-row input[type="color"]{width:34px; height:24px; border:none; border-radius:4px; background:none; cursor:pointer;}
+  .field-row input[type="range"]{width:120px;}
+  .field-row select{background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:3px; padding:4px 6px; font-size:12px;}
+  .font-btns{display:flex; gap:4px;}
+  .font-btns button{width:26px; height:26px; border-radius:5px; border:1px solid var(--line); background:var(--bg); color:var(--text); cursor:pointer; font-family:var(--mono); font-size:12px;}
+  .font-btns button:hover{border-color:var(--accent-dim); color:var(--accent);}
+  .drawer-close{position:absolute; top:18px; right:16px; background:none; border:none; color:var(--text-dim); font-size:20px; cursor:pointer;}
+  .reset-link{margin-top:26px; font-size:11px; color:var(--text-dim); cursor:pointer; text-decoration:underline;}
+  .config-box{background:var(--bg); border:1px solid var(--line); border-radius:3px; padding:10px; margin-bottom:14px;}
+  .config-box input{width:100%; background:transparent; border:none; color:var(--text-dim); font-family:var(--mono); font-size:10.5px; outline:none;}
+  .config-box label{font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.08em;}
+
+  .block-row{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0; border-bottom:1px solid var(--line);}
+  .block-row:last-child{border-bottom:none;}
+  .block-row-name{font-size:12.5px; color:var(--text); font-weight:600; flex:1;}
+  .block-row-controls{display:flex; align-items:center; gap:6px;}
+  .mini-btn{width:24px; height:24px; border-radius:5px; border:1px solid var(--line); background:var(--bg); color:var(--text-dim); cursor:pointer; font-size:11px; display:flex; align-items:center; justify-content:center;}
+  .mini-btn:hover{color:var(--accent); border-color:var(--accent-dim);}
+  .block-row select{background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:3px; padding:3px 4px; font-size:11px;}
+
+  .theme-grid{display:flex; flex-direction:column; gap:8px;}
+  .theme-card{
+    display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px;
+    border:1px solid var(--line); background:var(--bg); cursor:pointer; transition:all .15s ease;
+  }
+  .theme-card:hover{border-color:var(--accent-dim);}
+  .theme-card.active{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent);}
+  .theme-card .swatches{display:flex; gap:4px;}
+  .theme-card .swatches span{width:16px; height:16px; border-radius:50%; display:inline-block; border:1px solid rgba(255,255,255,.15);}
+  .theme-card .theme-name{font-family:var(--sans); font-weight:700; font-size:13px; color:var(--text);}
+
+  .history-list{padding:2px 0 6px;}
+  .history-row{display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--line); font-family:var(--mono); font-size:10.5px; color:var(--text-dim); cursor:pointer; transition:color .15s ease;}
+  .history-row:hover{color:var(--accent);}
+  .history-row:last-child{border-bottom:none;}
+  .history-row b{color:var(--text); font-family:var(--sans);}
+  .history-empty{padding:10px 0; color:var(--text-dim); font-family:var(--mono); font-size:11px;}
+
+  .foot-note{max-width:var(--maxw); margin:26px auto 0; text-align:center; font-size:11px; color:var(--text-dim); font-family:var(--mono);}
+
+  body.compact td, body.compact th{padding:4px 6px;}
+  body.compact .panel-head{padding:9px 14px;}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="dashboard-erp.css">
+</head>
+<body>
+
+<aside class="erp-sidebar" aria-label="Разделы ERP">
+  <div class="erp-sidebar-scroll">
+    <div class="erp-side-item" onclick="location.href='index.html'">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>CRM</span>
+    </div>
+    <div class="erp-side-item" onclick="location.href='index_17.html'">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>Задачи</span>
+    </div>
+    <div class="erp-side-item" onclick="location.href='index_18.html'">
+      <svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Зарплата</span>
+    </div>
+    <div class="erp-side-item">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg><span>Закупки</span>
+    </div>
+    <div class="erp-side-item" onclick="location.href='index_19.html'">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Проекты</span>
+    </div>
+    <div class="erp-side-item" onclick="location.href='index_23.html'">
+      <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-6 3 3 5-8"/></svg><span>Финансы</span>
+    </div>
+    <div class="erp-side-item" onclick="location.href='index_24.html'">
+      <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span>ПК</span>
+    </div>
+    <div class="erp-side-item">
+      <svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg><span>Склад</span>
+    </div>
+    <div class="erp-side-item" onclick="location.href='index_21.html'">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span>График</span>
+    </div>
+    <div class="erp-side-item" onclick="location.href='index_22.html'">
+      <svg viewBox="0 0 24 24"><rect x="1" y="7" width="15" height="11" rx="1.5"/><path d="M16 10h3l3 3v4h-6z"/><circle cx="5.5" cy="18.5" r="1.6"/><circle cx="18.5" cy="18.5" r="1.6"/></svg><span>Выезды</span>
+    </div>
+    <div class="erp-side-item active">
+      <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg><span>Dashboard</span>
+    </div>
+  </div>
+  <div class="erp-side-item">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.6 1z"/></svg><span>Настройки</span>
+  </div>
+</aside>
+
+<header class="erp-topbar">
+  <span class="erp-page-label"></span>
+  <div class="erp-user-chip">
+    <span class="erp-user-avatar">ПН</span>
+    <span class="erp-user-name">Пюра Николай</span>
+  </div>
+</header>
+
+<div class="starfield" id="starfield"></div>
+
+<nav class="dashboard-section-tabs" aria-label="Разделы Dashboard">
+  <a class="dashboard-section-tab active" href="dashboard.html" aria-current="page">Лиды</a>
+  <a class="dashboard-section-tab" href="dashboard-report.html?view=sales">Продажи</a>
+  <a class="dashboard-section-tab" href="dashboard-report.html?view=revenue">Выручка</a>
+  <a class="dashboard-section-tab" href="dashboard-report.html?view=production">Выработка</a>
+</nav>
+
+<div class="topbar">
+  <div class="status-row">
+    <div class="status-pill"><span class="dot" id="statusDot"></span><span id="statusText">Подключение…</span></div>
+    <div class="status-pill" id="updatedAtPill">—</div>
+    <div class="status-pill" id="backendWarnPill" style="display:none; border-color:var(--warn); color:var(--warn);" title="Бэкенд Apps Script ещё не обновлён — сохранение недели, тезисы и общий просмотр работать не будут">⚠ бэкенд устарел</div>
+    <button class="icon-btn" id="refreshBtn" title="Обновить сейчас">⟳</button>
+    <button class="icon-btn pencil" id="editModeBtn" title="Редактировать квоты и тезисы">✎</button>
+    <button class="icon-btn" id="settingsBtn" title="Настройки">⚙</button>
+    <button class="btn save-week" id="saveWeekBtn" title="Зафиксировать текущую неделю и начать новую">Сохранить неделю</button>
+  </div>
+</div>
+
+<div class="archive-banner" id="archiveBanner">
+  <span>Просмотр сохранённой недели: <b id="archiveLabel"></b></span>
+  <button class="btn primary" id="archiveExitBtn">← Вернуться к текущей неделе</button>
+</div>
+
+<div class="layout">
+  <!-- Прошедшая неделя (факт) -->
+  <div class="dial-card">
+    <div class="dial-label dial-label-main">Факт</div>
+    <div class="dial-wrap">
+      <svg viewBox="0 0 170 170" width="170" height="170">
+        <defs>
+          <linearGradient id="dialGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#22d3ee"/><stop offset="55%" stop-color="#a855f7"/><stop offset="100%" stop-color="#ec4899"/>
+          </linearGradient>
+        </defs>
+        <circle cx="85" cy="85" r="72" fill="none" stroke="var(--line)" stroke-width="10"/>
+        <circle id="dialProgress" cx="85" cy="85" r="72" fill="none" stroke="url(#dialGradient)" stroke-width="10" stroke-linecap="round" stroke-dasharray="452" stroke-dashoffset="452" transform="rotate(-90 85 85)"/>
+      </svg>
+      <div class="dial-center"><div class="dial-num" id="dialTotal">0</div><div class="dial-sub" id="dialTarget">из 0</div></div>
+    </div>
+    <div class="stat-chips">
+      <div class="stat-chip repeats"><span class="stat-chip-num" id="repeatsCount">0</span><span class="stat-chip-label">Обычные</span></div>
+      <div class="stat-chip ads"><span class="stat-chip-num" id="adsCount">0</span><span class="stat-chip-label">Реклама</span></div>
+    </div>
+    <div class="planfact">
+      <div class="planfact-row"><span>ФАКТ / ПЛАН</span><span id="planFactNums">0 / 0</span></div>
+      <div class="planfact-track"><div class="planfact-fill" id="planFactFill"></div></div>
+      <div class="planfact-pct" id="planFactPct">0%</div>
+    </div>
+    <div class="planfact-list" id="planFactList"></div>
+  </div>
+
+  <div class="main-col" id="mainCol"></div>
+
+  <!-- Текущая неделя (квоты/цели) -->
+  <div class="dial-card">
+    <div class="dial-label dial-label-main">План</div>
+    <div class="dial-num big" id="futureQuotaTotal">0</div>
+    <div class="dial-sub" style="margin-bottom:14px;">Квота</div>
+    <div class="stat-chips">
+      <div class="stat-chip repeats"><span class="stat-chip-num" id="futureRegularCount">0</span><span class="stat-chip-label">Повторы (квота)</span></div>
+      <div class="stat-chip ads"><span class="stat-chip-num" id="futureAdsCount">0</span><span class="stat-chip-label">Реклама (квота)</span></div>
+    </div>
+    <div class="mgr-list" id="managerQuotaList"></div>
+    <div class="add-row" id="addRow">
+      <input type="text" name="add-name" id="addName" placeholder="Имя">
+      <input type="number" name="add-quota" id="addQuota" placeholder="Квота" value="0">
+      <button class="btn primary" id="addManagerBtn">+</button>
+    </div>
+  </div>
+</div>
+
+<div class="foot-note">Данные лидов — из той же Google Таблицы, что и раньше · Неделя фиксируется вручную кнопкой «Сохранить неделю» · Порядок блоков, тезисы и история сохранений хранятся в этом браузере · build 2026-07-22-23:10-ПРОВЕРЕНО</div>
+
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="drawer" id="drawer">
+  <button class="drawer-close" id="drawerClose">×</button>
+
+  <h3>Быстрые настройки</h3>
+  <div class="field-row">
+    <label>Ширина дашборда</label>
+    <select id="widthSelect">
+      <option value="1150">Узкая</option>
+      <option value="1400" selected>Обычная</option>
+      <option value="1650">Широкая</option>
+      <option value="2000">Во всю ширину</option>
+    </select>
+  </div>
+  <div class="field-row"><label>Компактный режим</label><input type="checkbox" id="compactToggle"></div>
+  <div class="field-row"><label>Отступы</label><input type="range" id="gapSize" min="6" max="22" value="14"></div>
+  <div class="field-row">
+    <label>Размер шрифта</label>
+    <div class="font-btns">
+      <button id="fontMinus2">-2</button><button id="fontMinus1">-1</button>
+      <button id="fontPlus1">+1</button><button id="fontPlus2">+2</button>
+    </div>
+  </div>
+  <div class="field-row"><label>Точный размер шрифта</label><input type="range" id="fontSize" min="10" max="22" value="14"></div>
+
+  <h3>Подключение</h3>
+  <div class="config-box">
+    <label>Apps Script URL (.../exec)</label><br>
+    <input type="text" id="apiUrlInput" placeholder="https://script.google.com/macros/s/…/exec">
+  </div>
+
+  <h3>Блоки дашборда</h3>
+  <div id="blockList"></div>
+
+  <h3>История сохранённых недель</h3>
+  <div class="history-list" id="historyList"></div>
+
+  <h3>Цветовая тема</h3>
+  <div class="theme-grid" id="themeGrid"></div>
+  <div class="field-row" style="margin-top:14px;"><label>Прозрачность панелей</label><input type="range" id="panelAlpha" min="30" max="100" value="62"></div>
+
+  <h3>Обновление</h3>
+  <div class="field-row">
+    <label>Автообновление</label>
+    <select id="pollInterval">
+      <option value="5000" selected>5 сек</option>
+      <option value="10000">10 сек</option>
+      <option value="20000">20 сек</option>
+      <option value="60000">60 сек</option>
+      <option value="0">Выкл.</option>
+    </select>
+  </div>
+
+  <div class="reset-link" id="resetSettings">Сбросить внешний вид к исходному</div>
+</div>
+
+<script>
+const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbyTu9_0cX38JNXiYQRo1ditUCas_ob7v_UopXpRvzKYo-SBMdOlMkj8kXMmpEUwlL6AXw/exec';
+
+let state = { leads: [], managers: [] };
+let saveTimers = {};
+let editMode = false;
+let leadsSort = { key: 'number', dir: 1 };
+let leadsFilter = '';
+let viewSnapshot = null;   // если не null — просматриваем сохранённую неделю (не текущую)
+
+const SETTINGS_KEY = 'leadsDashboard_settings_erp_v1';
+const LEADS_CACHE_KEY = 'climateDashboard_leads_cache_v1';
+let weekState = { lastSavedNumber: 0, notes:{done:[],plans:[]}, history:[], currentQuotas:{} };
+
+const DEFAULT_BLOCKS = [
+  { id:'chart',    name:'График по дням', visible:true, width:'full' },
+  { id:'leadslist',name:'Список лидов', visible:true, width:'full' },
+  { id:'thesis',   name:'Итоги недели (сделано/планы)', visible:false, width:'full' }
+];
+const THEME_PRESETS = [
+  { id:'erp',     name:'ERP · синий', accent:'#2f6fed', accent2:'#8b5cf6', accent3:'#f2545b', ok:'#10b981', warn:'#ef5c6e', bg:'#f3f5f9', panel:'#ffffff', text:'#1c1e27' },
+  { id:'ocean',   name:'ERP · голубой', accent:'#3b82f6', accent2:'#5b7fb5', accent3:'#10b981', ok:'#10b981', warn:'#ef5c6e', bg:'#f3f5f9', panel:'#ffffff', text:'#1c1e27' },
+  { id:'violet',  name:'ERP · фиолетовый', accent:'#8b5cf6', accent2:'#6947c6', accent3:'#f2545b', ok:'#10b981', warn:'#ef5c6e', bg:'#f3f5f9', panel:'#ffffff', text:'#1c1e27' },
+  { id:'forest',  name:'ERP · бирюзовый', accent:'#10b981', accent2:'#2f6fed', accent3:'#f5a524', ok:'#10b981', warn:'#ef5c6e', bg:'#f3f5f9', panel:'#ffffff', text:'#1c1e27' },
+  { id:'mono',    name:'ERP · графитовый', accent:'#4a5470', accent2:'#65708a', accent3:'#8b5cf6', ok:'#10b981', warn:'#ef5c6e', bg:'#f3f5f9', panel:'#ffffff', text:'#1c1e27' },
+  { id:'coral',   name:'ERP · коралловый', accent:'#f2545b', accent2:'#8b5cf6', accent3:'#f5a524', ok:'#10b981', warn:'#ef5c6e', bg:'#f3f5f9', panel:'#ffffff', text:'#1c1e27' }
+];
+const DEFAULT_SETTINGS = {
+  apiUrl: DEFAULT_API_URL,
+  theme: 'erp',
+  accent:'#2f6fed', accent2:'#8b5cf6', accent3:'#f2545b', ok:'#10b981', warn:'#ef5c6e',
+  bg:'#f3f5f9', panel:'#ffffff', text:'#1c1e27', panelAlpha:100,
+  fontSize:14, gap:14, width:2000, compact:false, pollInterval:5000,
+  chartMode:'line', blocks: DEFAULT_BLOCKS
+};
+function loadSettings(){
+  try{
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    const merged = Object.assign({}, DEFAULT_SETTINGS, parsed);
+    merged.width = Math.max(Number(merged.width) || 0, 2000);
+    merged.pollInterval = 5000;
+    if(!merged.blocks || !merged.blocks.length) merged.blocks = DEFAULT_BLOCKS.map(b=>({...b}));
+    return merged;
+  }catch(e){ return Object.assign({}, DEFAULT_SETTINGS, { blocks: DEFAULT_BLOCKS.map(b=>({...b})) }); }
+}
+function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+let settings = loadSettings();
+
+function applySettings(){
+  const root = document.documentElement.style;
+  root.setProperty('--accent', settings.accent);
+  root.setProperty('--accent-2', settings.accent2);
+  root.setProperty('--accent-3', settings.accent3);
+  root.setProperty('--ok', settings.ok);
+  root.setProperty('--warn', settings.warn);
+  root.setProperty('--bg', settings.bg);
+  root.setProperty('--panel', settings.panel);
+  root.setProperty('--text', settings.text);
+  root.setProperty('--font-size', settings.fontSize + 'px');
+  root.setProperty('--gap', settings.gap + 'px');
+  root.setProperty('--maxw', settings.width + 'px');
+  root.setProperty('--panel-alpha', (settings.panelAlpha/100));
+  document.body.classList.toggle('compact', !!settings.compact);
+
+  document.getElementById('apiUrlInput').value = settings.apiUrl;
+  document.getElementById('panelAlpha').value = settings.panelAlpha;
+  document.getElementById('fontSize').value = settings.fontSize;
+  document.getElementById('gapSize').value = settings.gap;
+  document.getElementById('widthSelect').value = settings.width;
+  document.getElementById('compactToggle').checked = !!settings.compact;
+  document.getElementById('pollInterval').value = settings.pollInterval;
+  renderBlockList();
+  renderThemeGrid();
+}
+function renderThemeGrid(){
+  const box = document.getElementById('themeGrid');
+  if(!box) return;
+  box.innerHTML = THEME_PRESETS.map(t => `
+    <div class="theme-card ${settings.theme===t.id?'active':''}" data-theme="${t.id}">
+      <div class="swatches">
+        <span style="background:${t.accent}"></span>
+        <span style="background:${t.accent2}"></span>
+        <span style="background:${t.accent3}"></span>
+      </div>
+      <span class="theme-name">${t.name}</span>
+    </div>
+  `).join('');
+  box.querySelectorAll('.theme-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const preset = THEME_PRESETS.find(t => t.id === card.dataset.theme);
+      if(!preset) return;
+      Object.assign(settings, { theme:preset.id, accent:preset.accent, accent2:preset.accent2, accent3:preset.accent3, ok:preset.ok, warn:preset.warn, bg:preset.bg, panel:preset.panel, text:preset.text });
+      applySettings(); saveSettings(); renderChart();
+    });
+  });
+}
+function apiUrl(){ return settings.apiUrl || DEFAULT_API_URL; }
+
+/* ===== Starfield + planets ===== */
+function buildStarfield(){
+  const field = document.getElementById('starfield');
+  field.innerHTML = '';
+  const n = 100;
+  for(let i=0;i<n;i++){
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = (Math.random()*1.6 + 0.6).toFixed(1);
+    s.style.width = size+'px'; s.style.height = size+'px';
+    s.style.left = (Math.random()*100)+'%';
+    s.style.top = (Math.random()*100)+'%';
+    s.style.animationDuration = (2 + Math.random()*4).toFixed(1)+'s';
+    s.style.animationDelay = (Math.random()*5).toFixed(1)+'s';
+    field.appendChild(s);
+  }
+  for(let i=0;i<7;i++){
+    const sh = document.createElement('div');
+    sh.className = 'shooting-star';
+    sh.style.top = (Math.random()*60)+'%';
+    sh.style.left = (Math.random()*50)+'%';
+    sh.style.animationDuration = (5 + Math.random()*7).toFixed(1)+'s';
+    sh.style.animationDelay = (Math.random()*12).toFixed(1)+'s';
+    field.appendChild(sh);
+  }
+}
+
+/* ===== Данные ===== */
+let fetchInFlight = false;
+function applyLeadsPayload(data){
+  state.leads = data.leads || [];
+  state.managers = data.managers || [];
+  weekState.lastSavedNumber = Number(data.lastSavedNumber) || 0;
+  weekState.notes = data.notes || { done:[], plans:[] };
+  weekState.history = data.history || [];
+  weekState.currentQuotas = data.currentQuotas || {};
+  viewSnapshot = data.viewing ? (weekState.history.find(h => h.savedAt === data.viewing) || null) : null;
+}
+function hydrateLeadsCache(){
+  try{
+    const cached = JSON.parse(localStorage.getItem(LEADS_CACHE_KEY) || 'null');
+    if(!cached || !cached.data) return false;
+    applyLeadsPayload(cached.data);
+    return true;
+  }catch(e){ return false; }
+}
+function saveLeadsCache(data){
+  try{ localStorage.setItem(LEADS_CACHE_KEY, JSON.stringify({ savedAt:Date.now(), data })); }catch(e){}
+}
+function liveStateSignature(){
+  return JSON.stringify({
+    leads: state.leads,
+    managers: state.managers,
+    lastSavedNumber: weekState.lastSavedNumber,
+    notes: weekState.notes,
+    history: weekState.history,
+    currentQuotas: weekState.currentQuotas,
+    viewing: viewSnapshot ? viewSnapshot.savedAt : null
+  });
+}
+function renderLiveData(){
+  renderArchiveBanner();
+  renderDial();
+  renderFutureQuotaSidebar();
+  renderChart();
+  renderThesis();
+  renderLeadsTable();
+  renderHistory();
+  attachQuotaHandlers();
+}
+async function fetchData(options = {}){
+  if(fetchInFlight) return;
+  fetchInFlight = true;
+  const quiet = options.quiet === true;
+  const before = liveStateSignature();
+  if(!quiet) setStatus('loading');
+  try{
+    const res = await fetch(apiUrl() + '?action=getData&_=' + Date.now());
+    const data = await res.json();
+    if(data.error){ setStatus('error', data.error); return; }
+    applyLeadsPayload(data);
+    saveLeadsCache(data);
+    const backendUpToDate = ('lastSavedNumber' in data) && ('currentQuotas' in data) && ('history' in data) && ('viewing' in data);
+    document.getElementById('backendWarnPill').style.display = backendUpToDate ? 'none' : 'flex';
+    const changed = before !== liveStateSignature();
+    if(!quiet || !document.getElementById('chartWrap')) renderAll();
+    else if(changed) renderLiveData();
+    setStatus('live');
+    document.getElementById('updatedAtPill').textContent = 'обновлено ' + new Date().toLocaleTimeString('ru-RU');
+  }catch(err){
+    setStatus('error', err.message);
+  }finally{
+    fetchInFlight = false;
+  }
+}
+function setStatus(kind, msg){
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  dot.className = 'dot' + (kind==='live' ? ' live' : kind==='error' ? ' err' : '');
+  if(kind==='loading') txt.textContent = 'Обновление…';
+  else if(kind==='live') txt.textContent = 'Онлайн';
+  else if(kind==='error') txt.textContent = 'Ошибка: ' + (msg||'—');
+}
+
+function firstManagerName(raw){ if(!raw) return ''; return String(raw).split('/')[0].trim(); }
+function currentWeekLeads(){ return state.leads.filter(l => (Number(l.number)||0) > weekState.lastSavedNumber); }
+function activeWeekLeads(){
+  if(viewSnapshot){
+    const from = Number(viewSnapshot.fromNumber)||0;
+    const to = Number(viewSnapshot.toNumber)||0;
+    return state.leads.filter(l => { const n = Number(l.number)||0; return n >= from && n <= to; });
+  }
+  return currentWeekLeads();
+}
+function activeManagers(){ return (viewSnapshot && viewSnapshot.managersSnapshot) ? viewSnapshot.managersSnapshot : state.managers; }
+// Квота "Прошедшей недели" (левый блок) — полностью независима от квоты "Текущей недели"
+// (правый блок, план на следующий период). Никакого наследования между ними нет:
+// пока для менеджера явно не задана левая квота, она равна 0.
+function leftQuotaFor(m){
+  if(viewSnapshot) return Number(m.quota)||0; // в архиве квота уже зафиксирована в снапшоте
+  const v = weekState.currentQuotas ? weekState.currentQuotas[m.name] : undefined;
+  return (v !== undefined && v !== null) ? (Number(v)||0) : 0;
+}
+function computeCounts(managerName){
+  const leads = activeWeekLeads();
+  const isAdRow = managerName === 'Реклама';
+  let total = 0;
+  leads.forEach(lead => {
+    let matches;
+    if(isAdRow){ matches = (lead.type === 'Реклама'); }
+    else{ if(lead.type === 'Реклама') return; matches = firstManagerName(lead.manager) === managerName; }
+    if(matches) total++;
+  });
+  return { total };
+}
+function parseSheetDate(str){
+  if(!str) return null;
+  const m = String(str).match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+  if(!m) return null;
+  return new Date(Date.UTC(+m[3], +m[2]-1, +m[1]));
+}
+function escapeHtml(str){
+  return String(str||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ===== Layout ===== */
+const PANEL_TITLES = {
+  chart:'Лиды по дням',
+  thesis:'Итоги недели',
+  leadslist:'Лиды текущей недели'
+};
+
+function panelInnerHtml(id){
+  if(id==='chart') return `<div class="chart-wrap" id="chartWrap"></div>`;
+  if(id==='thesis') return `
+    <div class="thesis-grid">
+      <div class="thesis-col">
+        <div class="thesis-title done">✓ Сделано</div>
+        <div class="thesis-view"><ul class="thesis-list" id="doneList"></ul></div>
+        <div class="thesis-edit">
+          <textarea id="doneEdit" placeholder="Каждая строка — один тезис (2-3 слова)"></textarea>
+          <div class="thesis-hint">Одна строка = один тезис. Сохраняется автоматически.</div>
+        </div>
+      </div>
+      <div class="thesis-col">
+        <div class="thesis-title plans">→ Планы на след. неделю</div>
+        <div class="thesis-view"><ul class="thesis-list plans" id="plansList"></ul></div>
+        <div class="thesis-edit">
+          <textarea id="plansEdit" placeholder="Каждая строка — один тезис (2-3 слова)"></textarea>
+          <div class="thesis-hint">Одна строка = один тезис. Сохраняется автоматически.</div>
+        </div>
+      </div>
+    </div>
+  `;
+  if(id==='leadslist') return `
+    <div class="leads-body" id="leadsBody">
+      <table class="leads-table">
+        <thead><tr>
+          <th data-sort="number">№ ⇅</th><th data-sort="date">Дата ⇅</th><th data-sort="manager">Менеджер ⇅</th><th data-sort="type">Тип ⇅</th><th>Сделка</th>
+        </tr></thead>
+        <tbody id="leadsTableBody"></tbody>
+      </table>
+    </div>
+  `;
+  return '';
+}
+function panelHeadExtra(id){
+  if(id==='chart') return `
+    <div class="segmented" id="chartModeSwitch">
+      <button data-mode="line">Линия</button>
+      <button data-mode="bar">Столбцы</button>
+      <button data-mode="donut">По людям</button>
+    </div>
+  `;
+  if(id==='leadslist') return `
+    <div class="panel-head-left">
+      <select class="btn" id="managerFilter" style="padding:7px 10px;"><option value="">Все менеджеры</option></select>
+      <span style="font-size:11px; color:var(--text-dim); font-family:'JetBrains Mono',monospace;">(<span id="leadsCount">0</span>)</span>
+    </div>
+    <button class="btn" id="toggleLeadsBtn">Показать</button>
+  `;
+  return '';
+}
+function buildLayout(){
+  const col = document.getElementById('mainCol');
+  const order = settings.blocks.filter(b=>b.visible);
+  col.innerHTML = order.map(b => `
+    <div class="panel-slot ${b.width==='half'?'w-half':'w-full'}">
+      <div class="panel">
+        <div class="panel-head"><h2>${PANEL_TITLES[b.id]}</h2>${panelHeadExtra(b.id)}</div>
+        ${panelInnerHtml(b.id)}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderAll(){
+  buildLayout();
+  renderArchiveBanner();
+  renderDial();
+  renderFutureQuotaSidebar();
+  renderChart();
+  renderThesis();
+  renderLeadsTable();
+  renderHistory();
+  attachDynamicHandlers();
+}
+
+function renderArchiveBanner(){
+  const banner = document.getElementById('archiveBanner');
+  if(viewSnapshot){
+    banner.classList.add('show');
+    document.getElementById('archiveLabel').textContent =
+      new Date(viewSnapshot.savedAt).toLocaleDateString('ru-RU') + ' · №' + viewSnapshot.fromNumber + '–№' + viewSnapshot.toNumber;
+  } else {
+    banner.classList.remove('show');
+  }
+}
+
+function renderDial(){
+  const weekLeads = activeWeekLeads();
+  const mgrs = activeManagers();
+  const totalQuota = mgrs.reduce((s,m)=>s+leftQuotaFor(m),0);
+  const totalLeads = weekLeads.length;
+  document.getElementById('dialTotal').textContent = totalLeads;
+  document.getElementById('dialTarget').textContent = 'из ' + totalQuota;
+
+  const circumference = 2*Math.PI*72;
+  const pct = totalQuota > 0 ? Math.min(1, totalLeads/totalQuota) : 0;
+  const offset = circumference * (1-pct);
+  const circle = document.getElementById('dialProgress');
+  circle.style.strokeDasharray = circumference;
+  circle.style.strokeDashoffset = offset;
+  circle.style.stroke = pct >= 1 ? 'var(--ok)' : 'url(#dialGradient)';
+
+  const adsCount = weekLeads.filter(l => l.type === 'Реклама').length;
+  const regularCount = totalLeads - adsCount;
+  document.getElementById('repeatsCount').textContent = regularCount;
+  document.getElementById('adsCount').textContent = adsCount;
+
+  const rawPct = totalQuota > 0 ? (totalLeads/totalQuota)*100 : 0;
+  document.getElementById('planFactNums').textContent = totalLeads + ' / ' + totalQuota;
+  document.getElementById('planFactFill').style.width = Math.min(100, rawPct) + '%';
+  document.getElementById('planFactPct').textContent = Math.round(rawPct) + '%';
+  document.getElementById('planFactPct').style.color = rawPct >= 100 ? 'var(--ok)' : 'var(--accent-2)';
+
+  const canEditLeft = editMode && !viewSnapshot;
+  const list = document.getElementById('planFactList');
+  list.innerHTML = mgrs.map(m => {
+    const { total } = computeCounts(m.name);
+    const quota = leftQuotaFor(m);
+    const p = quota > 0 ? (total/quota)*100 : (total>0 ? 100 : 0);
+    const fillCls = p >= 100 ? 'over' : '';
+    const quotaCell = canEditLeft
+      ? `<input class="quota-input left-quota-input" type="number" min="0" value="${quota}" data-name="${escapeHtml(m.name)}">`
+      : `<span class="pf-quota-num">${quota}</span>`;
+    return `
+      <div class="pf-item" data-mgr="${escapeHtml(m.name)}">
+        <div class="pf-item-row"><span class="pf-item-name">${escapeHtml(m.name)}</span><span class="pf-item-nums"><span class="pf-total">${total}</span> / ${quotaCell} · <span class="pf-pct">${Math.round(p)}%</span></span></div>
+        <div class="pf-item-track"><div class="pf-item-fill ${fillCls}" style="width:${Math.min(100,p)}%"></div></div>
+      </div>`;
+  }).join('');
+}
+
+function renderFutureQuotaSidebar(){
+  const addRow = document.getElementById('addRow');
+  if(addRow) addRow.classList.toggle('visible', editMode && !viewSnapshot);
+  const mgrs = activeManagers();
+  const totalQuota = mgrs.reduce((s,m)=>s+(Number(m.quota)||0),0);
+  document.getElementById('futureQuotaTotal').textContent = totalQuota;
+  const adsQuota = mgrs.filter(m=>m.name==='Реклама').reduce((s,m)=>s+(Number(m.quota)||0),0);
+  const repeatsQuota = totalQuota - adsQuota;
+  document.getElementById('futureAdsCount').textContent = adsQuota;
+  document.getElementById('futureRegularCount').textContent = repeatsQuota;
+
+  const box = document.getElementById('managerQuotaList');
+  const canEdit = editMode && !viewSnapshot;
+  box.innerHTML = mgrs.map(m => {
+    const quotaCell = canEdit
+      ? `<input class="quota-input" type="number" min="0" value="${Number(m.quota)||0}" data-name="${escapeHtml(m.name)}" data-field="quota">`
+      : `<span class="mgr-row-quota">${Number(m.quota)||0}</span>`;
+    return `
+    <div class="mgr-row" data-mgr="${escapeHtml(m.name)}">
+      <span class="mgr-row-name ${m.name==='Реклама'?'ad':''}">${escapeHtml(m.name)}<span class="del" data-name="${escapeHtml(m.name)}" title="Удалить">✕</span></span>
+      ${quotaCell}
+    </div>
+  `;
+  }).join('');
+}
+
+/* ===== Графики ===== */
+const WEEKDAY_SHORT = ['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'];
+function weekdayFor(date){
+  if(!date) return '';
+  return WEEKDAY_SHORT[date.getUTCDay()];
+}
+function shortDate(label){
+  const parts = String(label||'').split('.');
+  return parts.length >= 2 ? (parts[0] + '.' + parts[1]) : String(label||'');
+}
+function formatDateLabel(d){
+  const dd = String(d.getUTCDate()).padStart(2,'0');
+  const mm = String(d.getUTCMonth()+1).padStart(2,'0');
+  const yyyy = d.getUTCFullYear();
+  return `${dd}.${mm}.${yyyy}`;
+}
+function mostRecentThursday(date){
+  const day = date.getUTCDay(); // 0=Вс,1=Пн,...4=Чт,...6=Сб
+  const diff = (day - 4 + 7) % 7;
+  const d = new Date(date);
+  d.setUTCDate(d.getUTCDate() - diff);
+  return d;
+}
+function groupByDate(leads){
+  const byDate = {};
+  leads.forEach(l => {
+    const key = l.date || '—';
+    if(!byDate[key]) byDate[key] = { total:0, ads:0, date: parseSheetDate(l.date) };
+    byDate[key].total++;
+    if(l.type === 'Реклама') byDate[key].ads++;
+  });
+
+  const validDates = Object.values(byDate).map(d=>d.date).filter(Boolean);
+  if(!validDates.length){
+    return Object.keys(byDate).map(k => ({ label:k, weekday:'', ...byDate[k] }));
+  }
+  const minDate = new Date(Math.min(...validDates));
+  const maxDate = new Date(Math.max(...validDates));
+  const startDate = mostRecentThursday(minDate);
+  let endDate = new Date(startDate);
+  endDate.setUTCDate(endDate.getUTCDate() + 6);
+  if(maxDate > endDate) endDate = new Date(maxDate);
+  if(!viewSnapshot){
+    const now = new Date();
+    const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    const daysUntilThursday = (4 - today.getUTCDay() + 7) % 7;
+    const nextThursday = new Date(today);
+    nextThursday.setUTCDate(nextThursday.getUTCDate() + daysUntilThursday);
+    if(nextThursday > endDate) endDate = nextThursday;
+  }
+
+  const days = [];
+  for(let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate()+1)){
+    const dow = d.getUTCDay();
+    if(dow === 0 || dow === 6) continue; // пропускаем сб/вс — нерабочие дни
+    const label = formatDateLabel(d);
+    const bucket = byDate[label] || { total:0, ads:0 };
+    days.push({ label, total: bucket.total, ads: bucket.ads, date: new Date(d), weekday: weekdayFor(d) });
+  }
+  return days;
+}
+function groupByManager(leads){
+  const byMgr = {};
+  leads.forEach(l => {
+    const name = l.type === 'Реклама' ? 'Реклама' : firstManagerName(l.manager) || '—';
+    byMgr[name] = (byMgr[name]||0) + 1;
+  });
+  return Object.keys(byMgr).map(name => ({ name, total: byMgr[name] })).sort((a,b)=>b.total-a.total);
+}
+
+function renderChart(){
+  const wrap = document.getElementById('chartWrap');
+  if(!wrap) return;
+  const weekLeads = activeWeekLeads();
+
+  if(weekLeads.length === 0){
+    wrap.innerHTML = '<div class="chart-empty">Нет лидов для отображения</div>';
+    return;
+  }
+  if(settings.chartMode === 'bar') renderChartBar(wrap, weekLeads);
+  else if(settings.chartMode === 'donut') renderChartDonut(wrap, weekLeads);
+  else renderChartLine(wrap, weekLeads);
+}
+
+function renderChartLine(wrap, weekLeads){
+  const days = groupByDate(weekLeads);
+  const avg = days.reduce((s,d)=>s+d.total,0) / days.length;
+  const maxVal = Math.max(...days.map(d=>d.total), 1);
+  const niceMax = Math.ceil(maxVal * 1.25) || 1;
+
+  const padX = 56, padTop = 38, padBottom = 58, chartH = 320;
+  const svgW = 900;
+  const svgH = padTop + chartH + padBottom;
+  const plotW = svgW - padX * 2;
+  const xFor = i => padX + (days.length === 1 ? plotW/2 : i * plotW/(days.length-1));
+  const yFor = v => padTop + chartH - (v/niceMax)*chartH;
+
+  let gridLines = '';
+  for(let g=0; g<=4; g++){
+    const val = Math.round((niceMax/4)*g);
+    const y = yFor(val);
+    gridLines += `<line x1="${padX-16}" y1="${y}" x2="${svgW-padX+16}" y2="${y}" stroke="var(--line)" stroke-width="1" opacity="0.55"/>
+      <text x="${padX-22}" y="${y+3}" text-anchor="end" font-family="var(--mono)" font-size="9.5" fill="var(--text-dim)">${val}</text>`;
+  }
+
+  let linePath = '', areaPath = '';
+  days.forEach((d,i) => {
+    const x = xFor(i), y = yFor(d.total);
+    if(i===0){ linePath += `M ${x} ${y} `; areaPath += `M ${x} ${padTop+chartH} L ${x} ${y} `; }
+    else{
+      const px = xFor(i-1), py = yFor(days[i-1].total);
+      const cx = (px+x)/2;
+      linePath += `C ${cx} ${py}, ${cx} ${y}, ${x} ${y} `;
+      areaPath += `C ${cx} ${py}, ${cx} ${y}, ${x} ${y} `;
+    }
+  });
+  const lastX = xFor(days.length-1);
+  areaPath += `L ${lastX} ${padTop+chartH} Z`;
+
+  let points = '';
+  days.forEach((d,i) => {
+    const x = xFor(i), y = yFor(d.total);
+    const above = d.total >= avg;
+    const color = above ? 'var(--ok)' : 'var(--warn)';
+    const isLast = i === days.length-1;
+    points += `
+      <g>
+        ${isLast ? `<circle cx="${x}" cy="${y}" r="12" fill="${color}" opacity="0.25"><animate attributeName="r" values="10;16;10" dur="2s" repeatCount="indefinite"/></circle>` : ''}
+        <circle cx="${x}" cy="${y}" r="7" fill="${color}" stroke="var(--panel)" stroke-width="2" style="filter:drop-shadow(0 0 6px ${color})"/>
+        <text x="${x}" y="${y-18}" text-anchor="middle" font-family="var(--display)" font-weight="700" font-size="14" fill="var(--text)">${d.total}</text>
+        <text x="${x}" y="${padTop+chartH+21}" text-anchor="middle" font-family="var(--display)" font-weight="700" font-size="11.5" fill="var(--accent)">${d.weekday}</text>
+        <text x="${x}" y="${padTop+chartH+35}" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--text-dim)">${escapeHtml(shortDate(d.label))}</text>
+      </g>`;
+  });
+
+  wrap.innerHTML = `
+    <svg viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="var(--accent)"/><stop offset="100%" stop-color="var(--accent-2)"/>
+        </linearGradient>
+        <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="var(--accent-2)" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="var(--accent-2)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${gridLines}
+      <line x1="${padX-16}" y1="${padTop+chartH}" x2="${svgW-padX+16}" y2="${padTop+chartH}" stroke="var(--line)" stroke-width="1.5"/>
+      <path d="${areaPath}" fill="url(#areaGradient)" stroke="none"/>
+      <path d="${linePath}" fill="none" stroke="url(#lineGradient)" stroke-width="3" style="filter:drop-shadow(0 0 5px rgba(168,85,247,.5))"/>
+      ${points}
+    </svg>
+  `;
+}
+
+function renderChartBar(wrap, weekLeads){
+  const days = groupByDate(weekLeads);
+  const avg = days.reduce((s,d)=>s+d.total,0) / days.length;
+  const maxVal = Math.max(...days.map(d=>d.total), 1);
+  const niceMax = Math.ceil(maxVal * 1.25) || 1;
+
+  const padX = 56, padTop = 38, padBottom = 58, chartH = 320;
+  const svgW = 900;
+  const svgH = padTop + chartH + padBottom;
+  const plotW = svgW - padX * 2;
+  const barW = Math.min(76, plotW / Math.max(days.length * 1.8, 1));
+  const xFor = i => padX + (days.length === 1 ? plotW/2 : i * plotW/(days.length-1));
+  const hFor = v => (v/niceMax)*chartH;
+
+  let gridLines = '';
+  for(let g=0; g<=4; g++){
+    const val = Math.round((niceMax/4)*g);
+    const y = padTop + chartH - hFor(val);
+    gridLines += `<line x1="${padX-16}" y1="${y}" x2="${svgW-padX+16}" y2="${y}" stroke="var(--line)" stroke-width="1" opacity="0.55"/>
+      <text x="${padX-22}" y="${y+3}" text-anchor="end" font-family="var(--mono)" font-size="9.5" fill="var(--text-dim)">${val}</text>`;
+  }
+
+  let bars = '';
+  days.forEach((d,i) => {
+    const x = xFor(i) - barW/2, h = hFor(d.total), y = padTop + chartH - h;
+    const above = d.total >= avg;
+    const color = above ? 'var(--ok)' : 'var(--warn)';
+    bars += `
+      <g>
+        <rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="8" fill="${color}" opacity="0.85" style="filter:drop-shadow(0 0 6px ${color})"/>
+        <text x="${x+barW/2}" y="${y-10}" text-anchor="middle" font-family="var(--display)" font-weight="700" font-size="14" fill="var(--text)">${d.total}</text>
+        <text x="${x+barW/2}" y="${padTop+chartH+21}" text-anchor="middle" font-family="var(--display)" font-weight="700" font-size="11.5" fill="var(--accent)">${d.weekday}</text>
+        <text x="${x+barW/2}" y="${padTop+chartH+35}" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--text-dim)">${escapeHtml(shortDate(d.label))}</text>
+      </g>`;
+  });
+
+  wrap.innerHTML = `
+    <svg viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="xMidYMid meet">
+      ${gridLines}
+      <line x1="${padX-16}" y1="${padTop+chartH}" x2="${svgW-padX+16}" y2="${padTop+chartH}" stroke="var(--line)" stroke-width="1.5"/>
+      ${bars}
+    </svg>
+  `;
+}
+
+function renderChartDonut(wrap, weekLeads){
+  const data = groupByManager(weekLeads);
+  const total = data.reduce((s,d)=>s+d.total,0) || 1;
+  const colors = ['var(--accent)','var(--accent-2)','var(--accent-3)','var(--ok)','var(--warn)','#f59e0b','#60a5fa'];
+  const R = 90, r = 54, cx = 130, cy = 130;
+  let acc = 0, arcs = '';
+  data.forEach((d,i) => {
+    const frac = d.total/total;
+    const startAngle = acc*2*Math.PI - Math.PI/2;
+    acc += frac;
+    const endAngle = acc*2*Math.PI - Math.PI/2;
+    const x1 = cx + R*Math.cos(startAngle), y1 = cy + R*Math.sin(startAngle);
+    const x2 = cx + R*Math.cos(endAngle), y2 = cy + R*Math.sin(endAngle);
+    const large = frac > 0.5 ? 1 : 0;
+    const color = colors[i % colors.length];
+    arcs += `<path d="M ${x1} ${y1} A ${R} ${R} 0 ${large} 1 ${x2} ${y2} L ${cx + r*Math.cos(endAngle)} ${cy + r*Math.sin(endAngle)} A ${r} ${r} 0 ${large} 0 ${cx + r*Math.cos(startAngle)} ${cy + r*Math.sin(startAngle)} Z" fill="${color}" style="filter:drop-shadow(0 0 5px ${color})"/>`;
+  });
+
+  const legend = data.map((d,i) => `
+    <div style="display:flex; align-items:center; gap:8px; padding:6px 0; font-family:var(--sans); font-weight:700; font-size:14px;">
+      <span style="width:11px; height:11px; border-radius:50%; background:${colors[i%colors.length]}; flex:none;"></span>
+      <span style="flex:1; color:var(--text);">${escapeHtml(d.name)}</span>
+      <span style="color:var(--text-dim); font-family:var(--mono); font-weight:600;">${d.total}</span>
+    </div>`).join('');
+
+  wrap.innerHTML = `
+    <div style="display:flex; gap:30px; flex-wrap:wrap; align-items:center; justify-content:center; padding:10px 0;">
+      <svg viewBox="0 0 260 260" width="260" height="260">
+        ${arcs}
+        <text x="130" y="124" text-anchor="middle" font-family="var(--display)" font-weight="800" font-size="30" fill="var(--text)">${total}</text>
+        <text x="130" y="144" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--text-dim)">лидов всего</text>
+      </svg>
+      <div style="min-width:200px;">${legend}</div>
+    </div>
+  `;
+}
+
+function renderThesis(){
+  const doneList = document.getElementById('doneList');
+  if(!doneList) return;
+  const plansList = document.getElementById('plansList');
+  const doneArr = weekState.notes.done || [];
+  const plansArr = weekState.notes.plans || [];
+  doneList.innerHTML = doneArr.length ? doneArr.map(t => `<li>${escapeHtml(t)}</li>`).join('') : '<li style="opacity:.4; font-weight:600;">пока пусто</li>';
+  plansList.innerHTML = plansArr.length ? plansArr.map(t => `<li>${escapeHtml(t)}</li>`).join('') : '<li style="opacity:.4; font-weight:600;">пока пусто</li>';
+  const doneEdit = document.getElementById('doneEdit');
+  const plansEdit = document.getElementById('plansEdit');
+  if(document.activeElement !== doneEdit) doneEdit.value = doneArr.join('\n');
+  if(document.activeElement !== plansEdit) plansEdit.value = plansArr.join('\n');
+}
+
+function renderLeadsTable(){
+  const tbody = document.getElementById('leadsTableBody');
+  if(!tbody) return;
+  const filterSelect = document.getElementById('managerFilter');
+  const names = [...new Set(state.managers.map(m => m.name))];
+  const prevValue = filterSelect.value;
+  filterSelect.innerHTML = '<option value="">Все менеджеры</option>' + names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+  filterSelect.value = names.includes(prevValue) ? prevValue : '';
+  leadsFilter = filterSelect.value;
+
+  let rows = [...activeWeekLeads()];
+  if(leadsFilter){
+    if(leadsFilter === 'Реклама'){ rows = rows.filter(l => l.type === 'Реклама'); }
+    else{ rows = rows.filter(l => l.type !== 'Реклама' && firstManagerName(l.manager) === leadsFilter); }
+  }
+  const { key, dir } = leadsSort;
+  rows.sort((a,b) => {
+    let va = a[key], vb = b[key];
+    if(key === 'number'){ va = Number(va)||0; vb = Number(vb)||0; return (va-vb)*dir; }
+    if(key === 'date'){ va = parseSheetDate(a.date)||new Date(0); vb = parseSheetDate(b.date)||new Date(0); return (va-vb)*dir; }
+    va = String(va||'').toLowerCase(); vb = String(vb||'').toLowerCase();
+    return va.localeCompare(vb, 'ru') * dir;
+  });
+  const countEl = document.getElementById('leadsCount');
+  if(countEl) countEl.textContent = rows.length;
+  tbody.innerHTML = rows.map(l => `
+    <tr>
+      <td>${escapeHtml(l.number)}</td><td>${escapeHtml(l.date)}</td><td>${escapeHtml(l.manager)}</td>
+      <td><span class="badge ${String(l.type||'').toLowerCase()}">${escapeHtml(l.type)}</span></td>
+      <td><a href="${escapeHtml(l.deal)}" target="_blank" rel="noopener">${escapeHtml(l.deal)}</a></td>
+    </tr>`).join('');
+  document.querySelectorAll('.leads-table th[data-sort]').forEach(th => {
+    th.classList.remove('sorted-asc','sorted-desc');
+    if(th.dataset.sort === key) th.classList.add(dir === 1 ? 'sorted-asc' : 'sorted-desc');
+  });
+}
+
+function renderHistory(){
+  const box = document.getElementById('historyList');
+  if(!box) return;
+  if(!weekState.history.length){ box.innerHTML = '<div class="history-empty">Ещё ни одна неделя не сохранена</div>'; return; }
+  box.innerHTML = weekState.history.map((h,i) => `
+    <div class="history-row" data-idx="${i}" title="Открыть эту неделю">
+      <span>${new Date(h.savedAt).toLocaleDateString('ru-RU')} · №${h.fromNumber}–№${h.toNumber}</span>
+      <span style="display:flex; align-items:center; gap:8px;">
+        <b>${h.total}</b> · <span style="color:var(--accent-3)">${h.ads} р.</span>
+        <span class="history-del" data-idx="${i}" title="Удалить эту запись (отменить сохранение)" style="color:var(--warn); cursor:pointer;">✕</span>
+      </span>
+    </div>`).join('');
+  box.querySelectorAll('.history-row').forEach(row => {
+    row.addEventListener('click', (e) => {
+      if(e.target.classList.contains('history-del')) return;
+      const snap = weekState.history[Number(row.dataset.idx)];
+      toggleDrawer(false);
+      setViewing(snap.savedAt);
+    });
+  });
+  box.querySelectorAll('.history-del').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteHistoryEntry(Number(el.dataset.idx));
+    });
+  });
+}
+
+async function deleteHistoryEntry(idx){
+  const isLatest = idx === 0;
+  const msg = isLatest
+    ? 'Удалить последнее сохранение? Текущая неделя снова будет считаться с этой границы номеров — лиды, посчитанные в этой записи, опять станут "текущей неделей".'
+    : 'Удалить эту запись из истории? На подсчёт текущей недели это не повлияет.';
+  if(!confirm(msg)) return;
+  const newHistory = weekState.history.slice();
+  newHistory.splice(idx, 1);
+  const newLastSavedNumber = isLatest ? (newHistory[0] ? newHistory[0].toNumber : 0) : weekState.lastSavedNumber;
+  try{
+    const res = await fetch(apiUrl(), { method:'POST', body: JSON.stringify({ action:'setWeekState', lastSavedNumber: newLastSavedNumber, history: newHistory }) });
+    const result = await res.json();
+    if(!result || !result.ok){ alert('Сервер не подтвердил изменение. Проверьте, что бэкенд Apps Script обновлён (см. инструкцию) и передеплоен.'); return; }
+  }catch(e){
+    alert('Не удалось связаться с сервером: ' + e.message);
+    return;
+  }
+  await fetchData();
+}
+
+async function setViewing(savedAtOrNull){
+  try{
+    const res = await fetch(apiUrl(), { method:'POST', body: JSON.stringify({ action:'setViewing', viewing: savedAtOrNull }) });
+    const result = await res.json();
+    if(!result || !result.ok){ alert('Сервер не подтвердил переключение недели. Проверьте, что бэкенд Apps Script обновлён и передеплоен.'); return; }
+  }catch(e){
+    alert('Не удалось связаться с сервером: ' + e.message);
+    return;
+  }
+  await fetchData();
+}
+
+/* ===== Взаимодействие ===== */
+function attachQuotaHandlers(){
+  // Эти элементы пересоздаются заново при каждой перерисовке списков —
+  // им нужны свежие обработчики. Остальные (кнопка добавить, фильтр, сортировка,
+  // переключатель графика, тезисы) статичны или пересоздаются только в renderAll(),
+  // поэтому подключаются отдельно и один раз, без риска задвоения.
+  document.querySelectorAll('.quota-input:not(.left-quota-input)').forEach(inp => {
+    inp.addEventListener('input', () => onRightQuotaInput(inp.dataset.name, inp.value));
+  });
+  document.querySelectorAll('.left-quota-input').forEach(inp => {
+    inp.addEventListener('input', () => onLeftQuotaInput(inp.dataset.name, inp.value));
+  });
+  document.querySelectorAll('.mgr-row .del').forEach(el => el.addEventListener('click', () => deleteManager(el.dataset.name)));
+}
+
+function attachDynamicHandlers(){
+  attachQuotaHandlers();
+
+  const filterSel = document.getElementById('managerFilter');
+  if(filterSel) filterSel.addEventListener('change', (e)=>{ leadsFilter = e.target.value; renderLeadsTable(); });
+
+  const toggleBtn = document.getElementById('toggleLeadsBtn');
+  if(toggleBtn) toggleBtn.addEventListener('click', (e)=>{
+    const body = document.getElementById('leadsBody');
+    const open = body.classList.toggle('open');
+    e.target.textContent = open ? 'Скрыть' : 'Показать';
+  });
+
+  document.querySelectorAll('.leads-table th[data-sort]').forEach(th => {
+    th.addEventListener('click', ()=>{
+      const key = th.dataset.sort;
+      if(leadsSort.key === key){ leadsSort.dir *= -1; } else { leadsSort = { key, dir: 1 }; }
+      renderLeadsTable();
+    });
+  });
+
+  const chartSwitch = document.getElementById('chartModeSwitch');
+  if(chartSwitch){
+    chartSwitch.querySelectorAll('button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === settings.chartMode);
+      btn.addEventListener('click', ()=>{
+        settings.chartMode = btn.dataset.mode;
+        saveSettings();
+        chartSwitch.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b===btn));
+        renderChart();
+      });
+    });
+  }
+
+  const doneEdit = document.getElementById('doneEdit');
+  const plansEdit = document.getElementById('plansEdit');
+  if(doneEdit) doneEdit.addEventListener('input', queueNotesSave);
+  if(plansEdit) plansEdit.addEventListener('input', queueNotesSave);
+}
+
+// ---- Лёгкие частичные обновления (без пересборки списков — фокус в полях не теряется) ----
+function updateRightTotals(){
+  const mgrs = activeManagers();
+  const totalQuota = mgrs.reduce((s,m)=>s+(Number(m.quota)||0),0);
+  document.getElementById('futureQuotaTotal').textContent = totalQuota;
+  const adsQuota = mgrs.filter(m=>m.name==='Реклама').reduce((s,m)=>s+(Number(m.quota)||0),0);
+  document.getElementById('futureRegularCount').textContent = totalQuota - adsQuota;
+  document.getElementById('futureAdsCount').textContent = adsQuota;
+}
+
+function updateLeftTotalsAndRow(name){
+  const weekLeads = activeWeekLeads();
+  const mgrs = activeManagers();
+  const totalQuota = mgrs.reduce((s,m)=>s+leftQuotaFor(m),0);
+  const totalLeads = weekLeads.length;
+  document.getElementById('dialTarget').textContent = 'из ' + totalQuota;
+
+  const circumference = 2*Math.PI*72;
+  const pct = totalQuota > 0 ? Math.min(1, totalLeads/totalQuota) : 0;
+  const circle = document.getElementById('dialProgress');
+  circle.style.strokeDasharray = circumference;
+  circle.style.strokeDashoffset = circumference * (1-pct);
+  circle.style.stroke = pct >= 1 ? 'var(--ok)' : 'url(#dialGradient)';
+
+  const rawPct = totalQuota > 0 ? (totalLeads/totalQuota)*100 : 0;
+  document.getElementById('planFactNums').textContent = totalLeads + ' / ' + totalQuota;
+  document.getElementById('planFactFill').style.width = Math.min(100, rawPct) + '%';
+  document.getElementById('planFactPct').textContent = Math.round(rawPct) + '%';
+  document.getElementById('planFactPct').style.color = rawPct >= 100 ? 'var(--ok)' : 'var(--accent-2)';
+
+  if(name){
+    const row = Array.from(document.querySelectorAll('.pf-item')).find(el => el.dataset.mgr === name);
+    if(row){
+      const m = mgrs.find(x=>x.name===name);
+      const { total } = computeCounts(name);
+      const quota = m ? leftQuotaFor(m) : 0;
+      const p = quota > 0 ? (total/quota)*100 : (total>0 ? 100 : 0);
+      const pctEl = row.querySelector('.pf-pct');
+      const fillEl = row.querySelector('.pf-item-fill');
+      const quotaNumEl = row.querySelector('.pf-quota-num');
+      if(pctEl) pctEl.textContent = Math.round(p) + '%';
+      if(quotaNumEl) quotaNumEl.textContent = quota;
+      if(fillEl){
+        fillEl.style.width = Math.min(100,p) + '%';
+        fillEl.classList.toggle('over', p >= 100);
+      }
+    }
+  }
+}
+
+function onRightQuotaInput(name, value){
+  const mgr = state.managers.find(m => m.name === name);
+  if(!mgr) return;
+  mgr.quota = Number(value) || 0;
+  updateRightTotals();
+  clearTimeout(saveTimers['right'+name]);
+  saveTimers['right'+name] = setTimeout(() => doSaveManagerNetwork(mgr), 500);
+}
+async function doSaveManagerNetwork(manager){
+  try{
+    await fetch(apiUrl(), { method:'POST', body: JSON.stringify({ action:'saveManager', manager }) });
+  }catch(e){ console.error('Save failed', e); }
+}
+
+function onLeftQuotaInput(name, value){
+  const quota = Number(value) || 0;
+  weekState.currentQuotas = weekState.currentQuotas || {};
+  weekState.currentQuotas[name] = quota;
+  updateLeftTotalsAndRow(name);
+  clearTimeout(saveTimers['left'+name]);
+  saveTimers['left'+name] = setTimeout(() => doSaveLeftQuotaNetwork(name, quota), 500);
+}
+async function doSaveLeftQuotaNetwork(name, quota){
+  try{
+    await fetch(apiUrl(), { method:'POST', body: JSON.stringify({ action:'saveCurrentQuota', name, quota }) });
+  }catch(e){ console.error('Save left quota failed', e); }
+}
+async function addManager(){
+  const nameInput = document.getElementById('addName');
+  const quotaInput = document.getElementById('addQuota');
+  const name = nameInput.value.trim();
+  if(!name) return;
+  if(state.managers.some(m=>m.name===name)){ alert('Такое имя уже есть'); return; }
+  const manager = { name, quota:Number(quotaInput.value)||0 };
+  state.managers.push(manager);
+  nameInput.value=''; quotaInput.value='0';
+  renderFutureQuotaSidebar(); renderDial(); attachQuotaHandlers();
+  try{
+    await fetch(apiUrl(), { method:'POST', body: JSON.stringify({ action:'saveManager', manager }) });
+  }catch(e){ console.error('Add manager failed', e); }
+}
+async function deleteManager(name){
+  if(!confirm('Удалить "'+name+'" из дашборда?')) return;
+  state.managers = state.managers.filter(m=>m.name!==name);
+  renderFutureQuotaSidebar(); renderDial(); attachQuotaHandlers();
+  try{
+    await fetch(apiUrl(), { method:'POST', body: JSON.stringify({ action:'deleteManager', name }) });
+  }catch(e){ console.error('Delete manager failed', e); }
+}
+
+function queueNotesSave(){ clearTimeout(saveTimers['__notes']); saveTimers['__notes'] = setTimeout(doSaveNotes, 500); }
+async function doSaveNotes(){
+  const done = document.getElementById('doneEdit').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const plans = document.getElementById('plansEdit').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const notes = { done, plans };
+  weekState.notes = notes; // мгновенный локальный отклик, пока ждём сервер
+  renderThesis();
+  try{
+    const res = await fetch(apiUrl(), { method:'POST', body: JSON.stringify({ action:'saveNotes', notes }) });
+    const result = await res.json();
+    if(!result || !result.ok){
+      console.error('saveNotes: сервер не подтвердил сохранение', result);
+    }
+  }catch(e){ console.error('Notes save failed', e); }
+}
+
+async function saveWeek(){
+  if(viewSnapshot){ alert('Сначала вернитесь к текущей неделе (кнопка вверху), чтобы сохранить её.'); return; }
+  const weekLeads = currentWeekLeads();
+  if(weekLeads.length === 0){
+    if(!confirm('За текущую неделю пока нет новых лидов. Всё равно сохранить (просто обновит дату)?')) return;
+  } else {
+    if(!confirm('Зафиксировать неделю (' + weekLeads.length + ' лидов) и начать новую? Данные графика больше меняться не будут. Это увидят все, кто открыл эту ссылку.')) return;
+  }
+  const nums = weekLeads.map(l=>Number(l.number)||0).filter(n=>n>0);
+  const newLastNumber = nums.length ? Math.max(...nums, weekState.lastSavedNumber) : weekState.lastSavedNumber;
+  const snapshot = {
+    savedAt: new Date().toISOString(),
+    fromNumber: weekState.lastSavedNumber + 1,
+    toNumber: newLastNumber,
+    total: weekLeads.length,
+    ads: weekLeads.filter(l=>l.type==='Реклама').length,
+    managersSnapshot: state.managers.map(m => ({ name: m.name, quota: leftQuotaFor(m) }))
+  };
+  try{
+    const res = await fetch(apiUrl(), { method:'POST', body: JSON.stringify({ action:'saveWeekSnapshot', snapshot, newLastNumber }) });
+    const result = await res.json();
+    if(!result || !result.ok){
+      alert('Сервер не подтвердил сохранение недели. Скорее всего, бэкенд Apps Script ещё не обновлён (нужно добавить код и передеплоить — см. инструкцию). Ничего не сохранилось.');
+      return;
+    }
+  }catch(e){
+    alert('Не удалось сохранить неделю на сервере: ' + e.message);
+    return;
+  }
+  await fetchData();
+}
+
+/* ===== Настройки блоков ===== */
+function renderBlockList(){
+  const box = document.getElementById('blockList');
+  box.innerHTML = settings.blocks.map((b,i) => `
+    <div class="block-row" data-idx="${i}">
+      <input type="checkbox" class="block-vis" data-idx="${i}" ${b.visible?'checked':''}>
+      <span class="block-row-name">${b.name}</span>
+      <div class="block-row-controls">
+        <select class="block-width" data-idx="${i}">
+          <option value="full" ${b.width==='full'?'selected':''}>Широкий</option>
+          <option value="half" ${b.width==='half'?'selected':''}>Половина</option>
+        </select>
+        <button class="mini-btn block-up" data-idx="${i}" title="Выше">↑</button>
+        <button class="mini-btn block-down" data-idx="${i}" title="Ниже">↓</button>
+      </div>
+    </div>
+  `).join('');
+
+  box.querySelectorAll('.block-vis').forEach(chk => chk.addEventListener('change', (e)=>{
+    settings.blocks[Number(e.target.dataset.idx)].visible = e.target.checked;
+    saveSettings(); buildLayout(); renderAll();
+  }));
+  box.querySelectorAll('.block-width').forEach(sel => sel.addEventListener('change', (e)=>{
+    settings.blocks[Number(e.target.dataset.idx)].width = e.target.value;
+    saveSettings(); buildLayout(); renderAll();
+  }));
+  box.querySelectorAll('.block-up').forEach(btn => btn.addEventListener('click', (e)=>{
+    const idx = Number(e.target.dataset.idx);
+    if(idx>0){ [settings.blocks[idx-1], settings.blocks[idx]] = [settings.blocks[idx], settings.blocks[idx-1]]; saveSettings(); renderBlockList(); buildLayout(); renderAll(); }
+  }));
+  box.querySelectorAll('.block-down').forEach(btn => btn.addEventListener('click', (e)=>{
+    const idx = Number(e.target.dataset.idx);
+    if(idx<settings.blocks.length-1){ [settings.blocks[idx+1], settings.blocks[idx]] = [settings.blocks[idx], settings.blocks[idx+1]]; saveSettings(); renderBlockList(); buildLayout(); renderAll(); }
+  }));
+}
+
+/* ===== UI общие ===== */
+let pollTimer = null;
+function schedulePoll(){
+  clearInterval(pollTimer);
+  const ms = Number(settings.pollInterval)||0;
+  if(ms > 0){ pollTimer = setInterval(() => { if(!editMode) fetchData({ quiet:true }); }, ms); }
+}
+function toggleEditMode(){
+  editMode = !editMode;
+  document.getElementById('editModeBtn').classList.toggle('active', editMode);
+  document.body.classList.toggle('edit-active', editMode);
+  const addRow = document.getElementById('addRow');
+  if(addRow) addRow.classList.toggle('visible', editMode && !viewSnapshot);
+  renderFutureQuotaSidebar(); renderThesis(); renderDial();
+  attachQuotaHandlers();
+}
+function toggleDrawer(open){
+  document.getElementById('drawer').classList.toggle('open', open);
+  document.getElementById('drawerOverlay').classList.toggle('open', open);
+  if(open) renderHistory();
+}
+function bindStaticUI(){
+  document.getElementById('refreshBtn').addEventListener('click', fetchData);
+  document.getElementById('settingsBtn').addEventListener('click', ()=>toggleDrawer(true));
+  document.getElementById('drawerClose').addEventListener('click', ()=>toggleDrawer(false));
+  document.getElementById('drawerOverlay').addEventListener('click', ()=>toggleDrawer(false));
+  document.getElementById('editModeBtn').addEventListener('click', toggleEditMode);
+  document.getElementById('saveWeekBtn').addEventListener('click', saveWeek);
+  document.getElementById('archiveExitBtn').addEventListener('click', ()=>{ setViewing(null); });
+  const addBtnStatic = document.getElementById('addManagerBtn');
+  if(addBtnStatic) addBtnStatic.addEventListener('click', addManager);
+
+  const bind = (id, key, transform) => {
+    document.getElementById(id).addEventListener('input', (e)=>{
+      settings[key] = transform ? transform(e.target.value) : e.target.value;
+      applySettings(); saveSettings();
+      if(key==='pollInterval') schedulePoll();
+      if(['accent','accent2','accent3','ok','warn'].includes(key)) renderChart();
+    });
+  };
+  bind('apiUrlInput','apiUrl');
+  bind('panelAlpha','panelAlpha', v=>Number(v));
+  bind('fontSize','fontSize', v=>Number(v));
+  bind('gapSize','gap', v=>Number(v));
+
+  document.getElementById('widthSelect').addEventListener('change', (e)=>{ settings.width = Number(e.target.value); applySettings(); saveSettings(); });
+  document.getElementById('compactToggle').addEventListener('change', (e)=>{ settings.compact = e.target.checked; applySettings(); saveSettings(); });
+  document.getElementById('pollInterval').addEventListener('change', (e)=>{ settings.pollInterval = Number(e.target.value); saveSettings(); schedulePoll(); });
+  document.getElementById('apiUrlInput').addEventListener('change', fetchData);
+
+  const fontStep = (delta) => { settings.fontSize = Math.max(10, Math.min(22, settings.fontSize + delta)); applySettings(); saveSettings(); };
+  document.getElementById('fontPlus1').addEventListener('click', ()=>fontStep(1));
+  document.getElementById('fontPlus2').addEventListener('click', ()=>fontStep(2));
+  document.getElementById('fontMinus1').addEventListener('click', ()=>fontStep(-1));
+  document.getElementById('fontMinus2').addEventListener('click', ()=>fontStep(-2));
+
+  document.getElementById('resetSettings').addEventListener('click', ()=>{
+    settings = Object.assign({}, DEFAULT_SETTINGS, { apiUrl: settings.apiUrl, blocks: DEFAULT_BLOCKS.map(b=>({...b})) });
+    applySettings(); saveSettings(); schedulePoll(); buildLayout(); renderAll();
+  });
+}
+
+/* ===== Старт ===== */
+buildStarfield();
+applySettings();
+bindStaticUI();
+buildLayout();
+const hasCachedLeads = hydrateLeadsCache();
+if(hasCachedLeads){
+  renderAll();
+  setStatus('live');
+  document.getElementById('updatedAtPill').textContent = 'обновление в фоне';
+}
+fetchData({ quiet:hasCachedLeads });
+schedulePoll();
+</script>
+</body>
+</html>
