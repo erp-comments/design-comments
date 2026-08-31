@@ -540,6 +540,10 @@ h2 {
   background: var(--surface-soft);
 }
 
+.image-button[hidden] {
+  display: none;
+}
+
 .image-button img {
   display: block;
   width: 100%;
@@ -852,9 +856,9 @@ h2 {
           <button type="button" class="collection-tab" data-collection="august31" aria-pressed="false">
             <span class="collection-tab-row">
               <span class="collection-tab-title">Доработки от 31.08</span>
-              <strong id="august31-progress-count">0 из 7</strong>
+              <strong id="august31-progress-count">0 из 1</strong>
             </span>
-            <span id="august31-progress-track" class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0" aria-label="Прогресс доработок от 31 августа">
+            <span id="august31-progress-track" class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0" aria-label="Прогресс доработок от 31 августа">
               <span id="august31-progress-bar"></span>
             </span>
           </button>
@@ -1685,62 +1689,12 @@ const august31Issues = [
     service: "Dashboard",
     page: "Внедрение",
     title: "Внедрить готовый Dashboard в основную ERP-систему",
-    note: "Комментарий для программиста: внедрите этот HTML в основную ERP-систему. Добавить Dashboard отдельным пунктом в левое меню ERP и открывать его внутри существующей оболочки с меню, верхней панелью, профилем и авторизацией. Переносить весь комплект HTML, CSS и JavaScript, а не один файл. Существующие разделы ERP и CRM не изменять.",
-    image: "assets/august31-dashboard/dashboard-preview.png",
-    alt: "Готовый Dashboard ERP с вкладками Лиды, Продажи, Выручка и Выработка",
+    note: "Внедрить готовый Dashboard в основную ERP-систему отдельным пунктом левого меню. Использовать приложенный HTML и весь комплект CSS/JavaScript, сохранить четыре вкладки — Лиды, Продажи, Выручка и Выработка — со всеми функциями, онлайн-обновлением и единой сеткой. Dashboard должен открываться внутри действующей оболочки ERP с её меню, профилем, авторизацией и навигацией. Существующие ERP и CRM не заменять и не переносить в комплект повторно: ZIP содержит только новый модуль Dashboard. Полный порядок интеграции, источники данных, правила обновления, календарная логика и критерии приёмки описаны в подробном ТЗ.",
     links: [
       { href: "assets/august31-dashboard/dashboard.html", label: "Открыть готовый HTML" },
       { href: "assets/august31-dashboard/IMPLEMENTATION.md", label: "Подробное ТЗ" },
       { href: "assets/august31-dashboard/dashboard-august31.zip", label: "Скачать комплект ZIP", download: true },
     ],
-  },
-  {
-    id: "august31-dashboard-unified-grid",
-    number: "02",
-    service: "Dashboard",
-    page: "Общий вид",
-    title: "Привести четыре вкладки к единой сетке",
-    note: "Оставить четыре вкладки в порядке: Лиды, Продажи, Выручка, Выработка. Во всех вкладках левая панель, центр и правая панель должны иметь одинаковые размеры и не прыгать при переключении. Слева показывать факт, по центру график, справа квоту или план. Убрать отдельную надпись Dashboard и котика. Сохранить светлый стиль ERP, спокойный фон, голубой акцент и одинаковую типографику.",
-  },
-  {
-    id: "august31-dashboard-leads",
-    number: "03",
-    service: "Dashboard",
-    page: "Лиды",
-    title: "Сохранить функции лидов и убрать пустое состояние при обновлении",
-    note: "При переходе в Лиды сразу показывать последние успешно загруженные данные, затем тихо обновлять их в фоне. Не показывать сначала пустой экран. Левая карточка — Факт, правая — План с основной подписью Квота. График должен занимать всё пространство и включать текущую неделю до ближайшего четверга. Сохранить режимы Линия, Столбцы и По людям; активную кнопку сделать светло-голубой. Функции сохранения недели и существующие пользовательские данные не терять.",
-  },
-  {
-    id: "august31-dashboard-sales",
-    number: "04",
-    service: "Dashboard",
-    page: "Продажи",
-    title: "Доработать продажи, КП и расшифровку квоты",
-    note: "Слева показать факт продаж: итог и суммы Анны, Георгия и Виталия. Ниже аккуратный блок КП: итог заметный с голубым акцентом, значения менеджеров компактнее и с увеличенными отступами. В центре график Недели/Месяц. Справа квота: итог и менеджеры, затем отдельно проекты Анны и Георгия. Для каждого менеджера показывать три крупнейших проекта по убыванию суммы, остальные — по кнопке Показать ещё. Убрать служебные подписи и ссылки на таблицы.",
-  },
-  {
-    id: "august31-dashboard-revenue",
-    number: "05",
-    service: "Dashboard",
-    page: "Выручка",
-    title: "Собрать выручку по той же схеме, что продажи",
-    note: "Слева факт выручки с итогом и менеджерами, в центре график Недели/Месяц, справа квота из рабочей таблицы, вкладка Оплаты. Под квотой вывести проекты Анны и Георгия: по три крупнейших проекта и кнопку Показать ещё. Размеры, отступы и шрифты должны совпадать с продажами. До получения свежего ответа показывать кеш, чтобы старое демонстрационное значение не мигало на экране.",
-  },
-  {
-    id: "august31-dashboard-production",
-    number: "06",
-    service: "Dashboard",
-    page: "Выработка",
-    title: "Оставить два главных показателя и компактный список проектов",
-    note: "Слева в Факте крупно показать общую выработку и выработку по услугам. В центре оставить переключатели Общая/Услуги и Недели/Месяц; услуги рисовать фиолетовым. Справа в Плане крупно показать общий план и план по услугам. Проекты сортировать по убыванию общей суммы, первоначально показывать десять крупнейших, остальные открывать по кнопке Показать ещё, чтобы исходная высота совпадала с продажами и выручкой.",
-  },
-  {
-    id: "august31-dashboard-live-and-calendar",
-    number: "07",
-    service: "Dashboard",
-    page: "Данные и даты",
-    title: "Настроить онлайн-обновление и правильное окно 12 недель",
-    note: "Продажи, выручку и выработку обновлять каждые 5 секунд из Google-таблиц. Сначала восстанавливать кеш, перерисовывать только при изменении данных и не обнулять отчёт при ошибке одного источника. До 01.09 включительно показывать 12 недель от 11.06 до 27.08. Первое смещение выполнить 02.09 — за день до четверга 03.09: окно станет от 09.07 до 24.09. Далее сдвигать окно на четыре недели каждые 28 дней. Ось начинать с нуля, максимум округлять, последнюю точку не прижимать к краю, на оси X оставить только даты.",
   },
 ];
 
@@ -2110,7 +2064,7 @@ function renderIssues() {
     const button = document.createElement("button");
     button.className = "issue-main";
     button.type = "button";
-    button.setAttribute("aria-label", `Показать скрин: ${issue.title}`);
+    button.setAttribute("aria-label", `Открыть комментарий: ${issue.title}`);
     button.innerHTML = `
       <span class="issue-number">${issue.number}</span>
       <span class="issue-title">${issue.title}</span>
@@ -2159,6 +2113,7 @@ function renderPreview() {
   if (!issue) {
     elements.previewImage.removeAttribute("src");
     elements.previewImage.alt = "";
+    elements.previewImageButton.hidden = true;
     elements.previewImageButton.classList.remove("is-placeholder");
     elements.previewImageButton.disabled = false;
     elements.previewLinks.replaceChildren();
@@ -2185,6 +2140,7 @@ function renderPreview() {
   });
   elements.previewLinks.hidden = links.length === 0;
   const hasImage = Boolean(issue.image);
+  elements.previewImageButton.hidden = !hasImage;
   elements.previewImageButton.classList.toggle("is-placeholder", !hasImage);
   elements.previewImageButton.disabled = !hasImage;
   elements.previewImageButton.setAttribute(
