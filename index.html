@@ -862,6 +862,15 @@ h2 {
               <span id="august31-progress-bar"></span>
             </span>
           </button>
+          <button type="button" class="collection-tab" data-collection="zpSept04" aria-pressed="false">
+            <span class="collection-tab-row">
+              <span class="collection-tab-title">Доработки сервиса ZP 04.09</span>
+              <strong id="zp-sept04-progress-count">0 из 6</strong>
+            </span>
+            <span id="zp-sept04-progress-track" class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0" aria-label="Прогресс доработок сервиса ZP от 04.09">
+              <span id="zp-sept04-progress-bar"></span>
+            </span>
+          </button>
         </nav>
         <div id="sync-status" class="sync-status is-saving" role="status" aria-live="polite">Подключаем общие галочки…</div>
       </section>
@@ -1698,11 +1707,75 @@ const august31Issues = [
   },
 ];
 
+const zpSept04Issues = [
+  {
+    id: "zp-sept04-tax-mode-selector",
+    number: "01",
+    service: "ZP",
+    page: "Расчёт зарплаты",
+    title: "Добавить выбор налогового режима 7% или 13%",
+    note: "В правой части верхней панели добавить обязательный выбор налогового режима с двумя взаимоисключающими значениями: «7%» и «13%». Выбранный режим применяется ко всему текущему расчёту зарплаты и сохраняется вместе с ведомостью. Одновременно может быть выбран только один вариант.",
+    image: "assets/zp-2026-09-04/annotated-01.svg",
+    alt: "Размеченная верхняя панель сервиса ZP с местом для выбора 7 или 13 процентов",
+  },
+  {
+    id: "zp-sept04-seven-percent-calculation",
+    number: "02",
+    service: "ZP",
+    page: "Расчёт зарплаты",
+    title: "Для режима 7% добавить шестое поле «Налог»",
+    note: "При выборе режима «7%» основной расчёт зарплаты оставить без изменений. Нижние поля «Бензин», «Авто», «Штраф», «Расходники» и «Премия» сделать компактнее и добавить шестое поле «Налог». В нём автоматически рассчитывать 7% от налоговой базы и показывать положительную сумму налога.",
+    image: "assets/zp-2026-09-04/annotated-02.svg",
+    alt: "Размеченный нижний блок расчёта зарплаты с пятью текущими полями и местом для налога",
+  },
+  {
+    id: "zp-sept04-seven-percent-statement",
+    number: "03",
+    service: "ZP",
+    page: "Зарплатная ведомость",
+    title: "Показывать налог 7% отдельной строкой в ведомости",
+    note: "В зарплатной ведомости и итоговом документе отдельно выводить строку или колонку «Налог 7%» с рассчитанной суммой. Итог к оплате должен включать зарплату и этот налог: сумма налога не должна теряться при формировании, сохранении или выгрузке документа.",
+    image: "assets/zp-2026-09-04/annotated-03.svg",
+    alt: "Размеченный итоговый блок зарплатной ведомости для добавления налога 7 процентов",
+  },
+  {
+    id: "zp-sept04-seven-percent-pk-payment",
+    number: "04",
+    service: "ZP",
+    page: "Передача в ПК",
+    title: "Передавать налог 7% в ПК отдельным платежом",
+    note: "При нажатии «Заплатить зарплату» и передаче данных в платёжный календарь создавать налог 7% отдельной платёжной позицией или заявкой — так же, как отдельно передаются штрафы, авто и другие начисления. Зарплата и налог должны иметь раздельные суммы и корректные статьи платежа.",
+    image: "assets/zp-2026-09-04/annotated-04.svg",
+    alt: "Размеченная кнопка передачи зарплаты из сервиса ZP в платёжный календарь",
+  },
+  {
+    id: "zp-sept04-ndfl-thirteen-percent",
+    number: "05",
+    service: "ZP",
+    page: "Расчёт и ведомость",
+    title: "Для режима 13% показывать НДФЛ со знаком минус",
+    note: "При выборе режима «13%» шестое поле должно называться «НДФЛ». Автоматически рассчитывать 13% от налоговой базы, показывать значение со знаком минус и уменьшать итоговую зарплату на эту сумму. В зарплатной ведомости также выводить отдельную строку «НДФЛ −13%» с отрицательной суммой.",
+    image: "assets/zp-2026-09-04/annotated-05.svg",
+    alt: "Размеченный блок расчёта зарплаты для отрицательного НДФЛ 13 процентов",
+  },
+  {
+    id: "zp-sept04-ndfl-pk-payments",
+    number: "06",
+    service: "ZP",
+    page: "Передача в ПК",
+    title: "Передавать чистую зарплату и НДФЛ 13% двумя платежами",
+    note: "Для режима «13%» в платёжный календарь передавать зарплату уже за вычетом НДФЛ. Одновременно создавать отдельный платёж на полную сумму удержанного НДФЛ 13%. Сумма чистой зарплаты и отдельный налоговый платёж вместе должны соответствовать данным зарплатной ведомости.",
+    image: "assets/zp-2026-09-04/annotated-06.svg",
+    alt: "Размеченные итог и кнопка передачи зарплаты и НДФЛ в платёжный календарь",
+  },
+];
+
 const issueCollections = {
   design: issues,
   employees: employeeIssues,
   august26: august26Issues,
   august31: august31Issues,
+  zpSept04: zpSept04Issues,
 };
 
 const storageKeys = {
@@ -1752,6 +1825,9 @@ const elements = {
   august31ProgressCount: document.querySelector("#august31-progress-count"),
   august31ProgressBar: document.querySelector("#august31-progress-bar"),
   august31ProgressTrack: document.querySelector("#august31-progress-track"),
+  zpSept04ProgressCount: document.querySelector("#zp-sept04-progress-count"),
+  zpSept04ProgressBar: document.querySelector("#zp-sept04-progress-bar"),
+  zpSept04ProgressTrack: document.querySelector("#zp-sept04-progress-track"),
   syncStatus: document.querySelector("#sync-status"),
   previewNumber: document.querySelector("#preview-number"),
   previewTitle: document.querySelector("#preview-title"),
@@ -2201,6 +2277,12 @@ function renderProgress() {
     elements.august31ProgressCount,
     elements.august31ProgressBar,
     elements.august31ProgressTrack,
+  );
+  updateProgress(
+    zpSept04Issues,
+    elements.zpSept04ProgressCount,
+    elements.zpSept04ProgressBar,
+    elements.zpSept04ProgressTrack,
   );
 }
 
