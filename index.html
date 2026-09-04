@@ -149,11 +149,40 @@ h2 {
   font-size: 15px;
 }
 
+.progress-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.future-collection-toggle {
+  flex: 0 0 auto;
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid #d6e0f2;
+  border-radius: 9px;
+  background: #f7f9fd;
+  color: #5f6d85;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+}
+
+.future-collection-toggle:hover,
+.future-collection-toggle[aria-expanded="true"] {
+  border-color: #9fbcfa;
+  background: #edf3ff;
+  color: var(--blue);
+}
+
 .sync-status {
   display: flex;
   align-items: center;
   gap: 7px;
-  margin-top: 10px;
   color: #16845b;
   font-size: 12px;
   font-weight: 750;
@@ -198,6 +227,7 @@ h2 {
 .issue-main:focus-visible,
 .service-tab:focus-visible,
 .collection-tab:focus-visible,
+.future-collection-toggle:focus-visible,
 .close-button:focus-visible,
 .image-button:focus-visible,
 .programmer-comment-input:focus-visible,
@@ -853,12 +883,12 @@ h2 {
               <span id="august26-progress-bar"></span>
             </span>
           </button>
-          <button type="button" class="collection-tab" data-collection="august31" aria-pressed="false">
+          <button id="future-improvements-tab" type="button" class="collection-tab" data-collection="august31" aria-pressed="false" hidden>
             <span class="collection-tab-row">
-              <span class="collection-tab-title">Доработки от 31.08</span>
+              <span class="collection-tab-title">Будущие доработки</span>
               <strong id="august31-progress-count">0 из 1</strong>
             </span>
-            <span id="august31-progress-track" class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0" aria-label="Прогресс доработок от 31 августа">
+            <span id="august31-progress-track" class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0" aria-label="Прогресс будущих доработок">
               <span id="august31-progress-bar"></span>
             </span>
           </button>
@@ -872,7 +902,10 @@ h2 {
             </span>
           </button>
         </nav>
-        <div id="sync-status" class="sync-status is-saving" role="status" aria-live="polite">Подключаем общие галочки…</div>
+        <div class="progress-footer">
+          <div id="sync-status" class="sync-status is-saving" role="status" aria-live="polite">Подключаем общие галочки…</div>
+          <button id="future-improvements-toggle" class="future-collection-toggle" type="button" aria-expanded="false" aria-controls="future-improvements-tab">＋ Будущие доработки</button>
+        </div>
       </section>
     </header>
 
@@ -1830,6 +1863,8 @@ const state = {
 
 const elements = {
   collectionTabs: document.querySelector("#collection-tabs"),
+  futureImprovementsToggle: document.querySelector("#future-improvements-toggle"),
+  futureImprovementsTab: document.querySelector("#future-improvements-tab"),
   serviceTabs: document.querySelector("#service-tabs"),
   list: document.querySelector("#issues-list"),
   empty: document.querySelector("#empty-state"),
@@ -2385,6 +2420,17 @@ elements.programmerCommentInput.addEventListener("keydown", (event) => {
 elements.collectionTabs.addEventListener("click", (event) => {
   const button = event.target.closest(".collection-tab");
   if (button) selectCollection(button.dataset.collection);
+});
+
+elements.futureImprovementsToggle.addEventListener("click", () => {
+  const expanded = elements.futureImprovementsToggle.getAttribute("aria-expanded") === "true";
+  const nextExpanded = !expanded;
+  elements.futureImprovementsToggle.setAttribute("aria-expanded", String(nextExpanded));
+  elements.futureImprovementsToggle.textContent = nextExpanded
+    ? "− Скрыть будущие доработки"
+    : "＋ Будущие доработки";
+  elements.futureImprovementsTab.hidden = !nextExpanded;
+  if (!nextExpanded && state.activeCollection === "august31") selectCollection("design");
 });
 
 elements.dialogClose.addEventListener("click", () => elements.dialog.close());
