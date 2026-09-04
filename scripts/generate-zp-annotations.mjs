@@ -62,16 +62,12 @@ const issues = [
     }],
   },
   {
-    number: "07",
-    source: "zp-statement.png",
-    crop: { x: 0.035, y: 0.015, w: 0.93, h: 0.78 },
+    number: "08",
+    source: "zp-payroll.png",
+    crop: { x: 0.2, y: 0.37, w: 0.68, h: 0.28 },
     callouts: [{
-      targets: [
-        { x: 0.078, y: 0.035, w: 0.845, h: 0.105 },
-        { x: 0.078, y: 0.145, w: 0.845, h: 0.455 },
-        { x: 0.078, y: 0.61, w: 0.845, h: 0.155 },
-      ],
-      lines: ["Полностью обновить дизайн зарплатной ведомости", "Аккуратная шапка, таблица, итоги и печать/PDF"],
+      targets: [{ x: 0.225, y: 0.548, w: 0.62, h: 0.09 }],
+      lines: ["В режиме 13% добавить шестое поле «Налог»", "Рассчитывать −13% и показывать сумму со знаком минус"],
     }],
   },
 ];
@@ -161,5 +157,5 @@ function renderIssue(issue) {
 }
 
 const results = issues.map(renderIssue);
-console.log(`Generated ${results.length} ZP annotation files.`);
+console.log(`Generated ${results.length} salary annotation files.`);
 results.forEach((result) => console.log(`${result.number}: ${result.width}x${result.height}`));
